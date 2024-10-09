@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -63,6 +64,15 @@ type DailyFrequency struct {
 	Sunday    bool `form:"sunday" json:"sunday"`
 }
 
+type TimeSlotEnum string
+
+const (
+	Morning   TimeSlotEnum = "Morning"
+	Afternoon TimeSlotEnum = "Afternoon"
+	Evening   TimeSlotEnum = "Evening"
+	Night     TimeSlotEnum = "Night"
+)
+
 type TimeSlot struct {
 	Morning   bool `form:"morning" json:"morning"`     //From 06:00 AM to 12:00 AM
 	Afternoon bool `form:"afternoon" json:"afternoon"` //From 12:00 PM to 06:00 PM
@@ -79,18 +89,18 @@ type SubscriptionScheduleData struct {
 
 type SubscriptionSchedule struct {
 	gorm.Model
-	Monday    bool
-	Tuesday   bool
-	Wednesday bool
-	Thursday  bool
-	Friday    bool
-	Saturday  bool
-	Sunday    bool
-
-	Morning   bool //From 06:00 AM to 12:00 AM
-	Afternoon bool //From 12:00 PM to 06:00 PM
-	Evening   bool //From 06:00 PM to 08:00 PM
-	Night     bool //From 08:00 PM to 10:00 PM
+	Sunday       bool
+	Monday       bool
+	Tuesday      bool
+	Wednesday    bool
+	Thursday     bool
+	Friday       bool
+	Saturday     bool
+	TimeSlotEnum TimeSlotEnum
+	Morning      bool //From 06:00 AM to 12:00 AM
+	Afternoon    bool //From 12:00 PM to 06:00 PM
+	Evening      bool //From 06:00 PM to 08:00 PM
+	Night        bool //From 08:00 PM to 10:00 PM
 
 	TimeZone string
 }
@@ -112,7 +122,7 @@ func CreateUser(userData UserData) User {
 	return user
 }
 
-func GetSubscriptions(email string) Subscription {
+func GetSubscriptionByEmail(email string) Subscription {
 	var user User
 	r1 := db().Find(&user, User{Email: email})
 	fmt.Printf("Query for user is %v \n", r1.Statement.SQL.String())
@@ -129,6 +139,27 @@ func GetSubscriptions(email string) Subscription {
 	return subscription
 }
 
+func GetSubscriptionByID(id int) Subscription {
+
+	var subscription Subscription
+
+	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscription, id)
+	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
+
+	fmt.Printf("sub id is %v \n", subscription.ID)
+
+	return subscription
+}
+
+func GetAllSubscriptions() []Subscription {
+
+	var subscriptions []Subscription
+
+	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions)
+	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
+
+	return subscriptions
+}
 func CreateSubscriptionSchedule(subscriptionScheduleData SubscriptionScheduleData) SubscriptionSchedule {
 	subscriptionScheduleDb := SubscriptionSchedule{
 		Monday:    subscriptionScheduleData.DailyFrequency.Monday,
@@ -152,7 +183,7 @@ func CreateSubscriptionSchedule(subscriptionScheduleData SubscriptionScheduleDat
 	return subscriptionSchedule
 }
 
-func CreateSubscription(subscriptionData SubscriptionData, user User, subscriptionSchedule SubscriptionSchedule) {
+func CreateSubscription(subscriptionData SubscriptionData, user User, subscriptionSchedule SubscriptionSchedule) Subscription {
 	attrs := Subscription{
 		UserID: user.ID,
 	}
@@ -161,20 +192,32 @@ func CreateSubscription(subscriptionData SubscriptionData, user User, subscripti
 		Sites:                  pq.StringArray(subscriptionData.Sites),
 		SubscriptionScheduleID: subscriptionSchedule.ID,
 	}
-
-	db().Where(attrs).Assign(values).FirstOrCreate(&values)
+	var subscription Subscription
+	db().Where(attrs).Assign(values).FirstOrCreate(&subscription, values)
+	return subscription
 }
 
 func Migrate() {
 	db().AutoMigrate(&Topic{}, &Subscription{}, &Site{}, &User{}, &SubscriptionSchedule{})
 }
 
-func db() *gorm.DB {
-	dsn := "host=localhost user=postgres password=password dbname=news-master port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+var (
+	dataBase *gorm.DB
+	once     sync.Once
+	err      error
+)
 
-	if err != nil {
-		panic("Errooroorooro")
-	}
-	return db
+func db() *gorm.DB {
+	once.Do(func() {
+		dsn := "host=localhost user=postgres password=password dbname=news-master port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+		dataBase, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+		if err != nil {
+			panic("Unable to connect to db")
+		}
+		sqlDB, _ := dataBase.DB()
+		sqlDB.SetMaxOpenConns(100)
+		sqlDB.SetMaxIdleConns(5)
+	})
+
+	return dataBase
 }

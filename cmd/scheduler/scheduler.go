@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"news-master/actions"
+	"news-master/cmd/process"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
@@ -21,36 +23,21 @@ func main() {
 			"* * * * * *", true,
 		),
 		gocron.NewTask(
-			func(a string, b int) {
-				fmt.Println("running first  function")
+			func() {
+				for _, elem := range actions.GetAllSubscriptions() {
+					process.Notify(time.Now(), elem)
+					fmt.Printf("Subscription for %v\n", elem.User.Email)
+					fmt.Printf("SubscriptionTopic for %v\n", elem.Topics)
+				}
 			},
-			"hello",
-			1,
 		),
 	)
+
 	if err != nil {
-		// handle error
+		panic("Error in scheduler")
 	}
 	// each job has a unique id
 	fmt.Println(j.ID())
-
-	j2, err2 := s.NewJob(
-		gocron.CronJob(
-			"* * * * * *", true,
-		),
-		gocron.NewTask(
-			func(a string, b int) {
-				fmt.Println("running second function")
-			},
-			"hello",
-			1,
-		),
-	)
-	if err2 != nil {
-		// handle error
-	}
-	// each job has a unique id
-	fmt.Println(j2.ID())
 
 	// start the scheduler
 	s.Start()

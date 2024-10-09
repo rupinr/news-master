@@ -7,6 +7,7 @@ import (
 	"news-master/actions"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type Subscription struct {
@@ -45,15 +46,39 @@ func main() {
 
 			fmt.Printf("schedule id is %v\n", schedule.ID)
 
-			actions.CreateSubscription(subscriptionData, user, schedule)
+			sub := actions.CreateSubscription(subscriptionData, user, schedule)
+			createdSub := actions.GetSubscriptionByID(int(sub.ID))
+			subData := actions.SubscriptionScheduleData{DailyFrequency: actions.DailyFrequency{
+				Monday:    createdSub.SubscriptionSchedule.Monday,
+				Tuesday:   createdSub.SubscriptionSchedule.Tuesday,
+				Wednesday: createdSub.SubscriptionSchedule.Wednesday,
+				Thursday:  createdSub.SubscriptionSchedule.Thursday,
+				Friday:    createdSub.SubscriptionSchedule.Friday,
+				Saturday:  createdSub.SubscriptionSchedule.Saturday,
+				Sunday:    createdSub.SubscriptionSchedule.Sunday,
+			}, TimeSlot: actions.TimeSlot{
+				Morning:   createdSub.SubscriptionSchedule.Morning,
+				Afternoon: createdSub.SubscriptionSchedule.Afternoon,
+				Evening:   createdSub.SubscriptionSchedule.Evening,
+				Night:     createdSub.SubscriptionSchedule.Night,
+			}, TimeZone: createdSub.SubscriptionSchedule.TimeZone}
+			s := actions.SubscriptionData{
+				Email:                    createdSub.User.Email,
+				Topics:                   pq.StringArray(createdSub.Topics),
+				Sites:                    pq.StringArray(createdSub.Sites),
+				SubscriptionScheduleData: subData,
+			}
+
+			jsonData, _ := json.Marshal(s)
+
+			c.Data(http.StatusOK, "application/json", jsonData)
 		}
-		c.String(200, "Success")
 	})
 
 	r.GET("/subscription", func(c *gin.Context) {
 		email := c.Query("email")
 		fmt.Println(email)
-		sub := actions.GetSubscriptions(email)
+		sub := actions.GetSubscriptionByEmail(email)
 		fmt.Printf("sub schedule id is %v\n", sub.SubscriptionSchedule)
 		subData := actions.SubscriptionData{
 			Email:  email,

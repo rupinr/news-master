@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"news-master/actions"
+	"news-master/datamodels/dto"
+	"news-master/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -17,38 +18,38 @@ type Subscription struct {
 }
 
 func main() {
-	actions.Migrate()
+	repository.Migrate()
 	r := gin.Default()
 	r.POST("/topic", func(c *gin.Context) {
-		var topic actions.TopicData
+		var topic dto.Topic
 		if c.ShouldBind(&topic) == nil {
-			actions.CreateTopic(topic)
+			repository.CreateTopic(topic)
 		}
 		c.String(200, "Success")
 	})
 
 	r.POST("/site", func(c *gin.Context) {
-		var site actions.SiteData
+		var site dto.Site
 		if c.ShouldBind(&site) == nil {
 			fmt.Println(site)
-			actions.CreateSite(site)
+			repository.CreateSite(site)
 		}
 		c.String(200, "Success")
 	})
 
 	r.POST("/subscribe", func(c *gin.Context) {
-		var subscriptionData actions.SubscriptionData
+		var subscriptionData dto.Subscription
 		if c.ShouldBind(&subscriptionData) == nil {
-			user := actions.CreateUser(actions.UserData{Email: subscriptionData.Email})
+			user := repository.CreateUser(dto.User{Email: subscriptionData.Email})
 
 			fmt.Printf("user id is %v\n", user.ID)
-			schedule := actions.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
+			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 
 			fmt.Printf("schedule id is %v\n", schedule.ID)
 
-			sub := actions.CreateSubscription(subscriptionData, user, schedule)
-			createdSub := actions.GetSubscriptionByID(int(sub.ID))
-			subData := actions.SubscriptionScheduleData{DailyFrequency: actions.DailyFrequency{
+			sub := repository.CreateSubscription(subscriptionData, user, schedule)
+			createdSub := repository.GetSubscriptionByID(int(sub.ID))
+			subData := dto.SubscriptionSchedule{DailyFrequency: dto.DailyFrequency{
 				Monday:    createdSub.SubscriptionSchedule.Monday,
 				Tuesday:   createdSub.SubscriptionSchedule.Tuesday,
 				Wednesday: createdSub.SubscriptionSchedule.Wednesday,
@@ -59,7 +60,7 @@ func main() {
 			},
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
 				TimeSlot: createdSub.SubscriptionSchedule.TimeSlotEnum}
-			s := actions.SubscriptionData{
+			s := dto.Subscription{
 				Email:                    createdSub.User.Email,
 				Topics:                   pq.StringArray(createdSub.Topics),
 				Sites:                    pq.StringArray(createdSub.Sites),
@@ -75,14 +76,14 @@ func main() {
 	r.GET("/subscription", func(c *gin.Context) {
 		email := c.Query("email")
 		fmt.Println(email)
-		sub := actions.GetSubscriptionByEmail(email)
+		sub := repository.GetSubscriptionByEmail(email)
 		fmt.Printf("sub schedule id is %v\n", sub.SubscriptionSchedule)
-		subData := actions.SubscriptionData{
+		subData := dto.Subscription{
 			Email:  sub.User.Email,
 			Topics: sub.Topics,
 			Sites:  sub.Sites,
-			SubscriptionScheduleData: actions.SubscriptionScheduleData{
-				DailyFrequency: actions.DailyFrequency{
+			SubscriptionScheduleData: dto.SubscriptionSchedule{
+				DailyFrequency: dto.DailyFrequency{
 					Monday:    sub.SubscriptionSchedule.Monday,
 					Tuesday:   sub.SubscriptionSchedule.Tuesday,
 					Wednesday: sub.SubscriptionSchedule.Wednesday,

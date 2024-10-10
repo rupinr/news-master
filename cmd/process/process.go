@@ -2,11 +2,12 @@ package process
 
 import (
 	"fmt"
-	"news-master/actions"
+	"news-master/datamodels/common"
+	"news-master/datamodels/entity"
 	"time"
 )
 
-func Notify(currentServerTime time.Time, subscription actions.Subscription) {
+func Notify(currentServerTime time.Time, subscription entity.Subscription) {
 	location, _ := time.LoadLocation(subscription.SubscriptionSchedule.TimeZone)
 	weekdayInLocation := currentServerTime.In(location).Weekday()
 	if enabledOnSunday(subscription) && isSundayInLocation(weekdayInLocation) {
@@ -49,53 +50,53 @@ func isSaturdayInLocation(weekday time.Weekday) bool {
 	return weekday == time.Saturday
 }
 
-func enabledOnSunday(subscription actions.Subscription) bool {
+func enabledOnSunday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Sunday
 }
 
-func enabledOnMonday(subscription actions.Subscription) bool {
+func enabledOnMonday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Monday
 }
 
-func enabledOnTuesday(subscription actions.Subscription) bool {
+func enabledOnTuesday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Tuesday
 }
-func enabledOnWednesday(subscription actions.Subscription) bool {
+func enabledOnWednesday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Wednesday
 }
-func enabledOnThursday(subscription actions.Subscription) bool {
+func enabledOnThursday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Thursday
 }
-func enabledOnFriday(subscription actions.Subscription) bool {
+func enabledOnFriday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Friday
 }
-func enabledOnSaturday(subscription actions.Subscription) bool {
+func enabledOnSaturday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Saturday
 }
 
-func fireNotificationInTimeSlot(timeInLocation time.Time, subscription actions.Subscription) {
-	if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Morning {
+func fireNotificationInTimeSlot(timeInLocation time.Time, subscription entity.Subscription) {
+	if subscription.SubscriptionSchedule.TimeSlotEnum == common.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Morning {
 		fmt.Printf("%v can get Morning notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Afternoon {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Afternoon {
 		fmt.Printf("%v can get Afternoon notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Evening {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Evening {
 		fmt.Printf("%v can get Evening notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Night {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Night {
 		fmt.Printf("%v can get Night notifcation\n", subscription.User.Email)
 	}
 }
 
-func timeSlotInLocation(currentServerTime time.Time, schedule actions.SubscriptionSchedule) actions.TimeSlot {
+func timeSlotInLocation(currentServerTime time.Time, schedule entity.SubscriptionSchedule) common.TimeSlot {
 	location, _ := time.LoadLocation(schedule.TimeZone)
 	localTime := currentServerTime.In(location)
 	if isMorning(localTime, *location) {
-		return actions.Morning
+		return common.Morning
 	} else if isAfterNoon(localTime, *location) {
-		return actions.Afternoon
+		return common.Afternoon
 	} else if isEvening(localTime, *location) {
-		return actions.Evening
+		return common.Evening
 	} else {
-		return actions.Night
+		return common.Night
 	}
 }
 

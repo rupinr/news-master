@@ -13,3 +13,8 @@ Need to have topics table with all possible topics.
 Need to have 
 
 t
+
+//TODO
+
+change timeslot to enumlike
+do assertion on create.

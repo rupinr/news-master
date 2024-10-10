@@ -64,22 +64,14 @@ type DailyFrequency struct {
 	Sunday    bool `form:"sunday" json:"sunday"`
 }
 
-type TimeSlotEnum string
+type TimeSlot string
 
 const (
-	Morning   TimeSlotEnum = "Morning"
-	Afternoon TimeSlotEnum = "Afternoon"
-	Evening   TimeSlotEnum = "Evening"
-	Night     TimeSlotEnum = "Night"
+	Morning   TimeSlot = "Morning"
+	Afternoon TimeSlot = "Afternoon"
+	Evening   TimeSlot = "Evening"
+	Night     TimeSlot = "Night"
 )
-
-type TimeSlot struct {
-	Morning   bool `form:"morning" json:"morning"`     //From 06:00 AM to 12:00 AM
-	Afternoon bool `form:"afternoon" json:"afternoon"` //From 12:00 PM to 06:00 PM
-	Evening   bool `form:"evening" json:"evening"`     //From 06:00 PM to 08:00 PM
-	Night     bool `form:"night" json:"night"`         //From 08:00 PM to 10:00 PM
-
-}
 
 type SubscriptionScheduleData struct {
 	DailyFrequency DailyFrequency `form:"dailyFrequency" json:"dailyFrequency"`
@@ -96,13 +88,8 @@ type SubscriptionSchedule struct {
 	Thursday     bool
 	Friday       bool
 	Saturday     bool
-	TimeSlotEnum TimeSlotEnum
-	Morning      bool //From 06:00 AM to 12:00 AM
-	Afternoon    bool //From 12:00 PM to 06:00 PM
-	Evening      bool //From 06:00 PM to 08:00 PM
-	Night        bool //From 08:00 PM to 10:00 PM
-
-	TimeZone string
+	TimeSlotEnum TimeSlot
+	TimeZone     string
 }
 
 func CreateTopic(topicData TopicData) {
@@ -124,14 +111,14 @@ func CreateUser(userData UserData) User {
 
 func GetSubscriptionByEmail(email string) Subscription {
 	var user User
-	r1 := db().Find(&user, User{Email: email})
-	fmt.Printf("Query for user is %v \n", r1.Statement.SQL.String())
+	db().Find(&user, User{Email: email})
 
-	fmt.Printf("user id is %v \n", user.ID)
+	fmt.Printf("user id is %v \n", user.Email)
 
 	var subscription Subscription
 
-	r := db().Joins("SubscriptionSchedule").Find(&subscription, Subscription{UserID: user.ID})
+	r :=
+		db().Joins("SubscriptionSchedule").Joins("User").Joins("SubscriptionSchedule").Find(&subscription, Subscription{UserID: user.ID})
 	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
 
 	fmt.Printf("sub id is %v \n", subscription.ID)
@@ -162,19 +149,15 @@ func GetAllSubscriptions() []Subscription {
 }
 func CreateSubscriptionSchedule(subscriptionScheduleData SubscriptionScheduleData) SubscriptionSchedule {
 	subscriptionScheduleDb := SubscriptionSchedule{
-		Monday:    subscriptionScheduleData.DailyFrequency.Monday,
-		Tuesday:   subscriptionScheduleData.DailyFrequency.Tuesday,
-		Wednesday: subscriptionScheduleData.DailyFrequency.Wednesday,
-		Thursday:  subscriptionScheduleData.DailyFrequency.Thursday,
-		Friday:    subscriptionScheduleData.DailyFrequency.Friday,
-		Saturday:  subscriptionScheduleData.DailyFrequency.Saturday,
-		Sunday:    subscriptionScheduleData.DailyFrequency.Sunday,
-
-		Morning:   subscriptionScheduleData.TimeSlot.Morning,
-		Evening:   subscriptionScheduleData.TimeSlot.Evening,
-		Afternoon: subscriptionScheduleData.TimeSlot.Afternoon,
-		Night:     subscriptionScheduleData.TimeSlot.Night,
-		TimeZone:  subscriptionScheduleData.TimeZone,
+		Monday:       subscriptionScheduleData.DailyFrequency.Monday,
+		Tuesday:      subscriptionScheduleData.DailyFrequency.Tuesday,
+		Wednesday:    subscriptionScheduleData.DailyFrequency.Wednesday,
+		Thursday:     subscriptionScheduleData.DailyFrequency.Thursday,
+		Friday:       subscriptionScheduleData.DailyFrequency.Friday,
+		Saturday:     subscriptionScheduleData.DailyFrequency.Saturday,
+		Sunday:       subscriptionScheduleData.DailyFrequency.Sunday,
+		TimeSlotEnum: subscriptionScheduleData.TimeSlot,
+		TimeZone:     subscriptionScheduleData.TimeZone,
 	}
 
 	fmt.Printf("Schedule %v\n", subscriptionScheduleDb)
@@ -193,7 +176,7 @@ func CreateSubscription(subscriptionData SubscriptionData, user User, subscripti
 		SubscriptionScheduleID: subscriptionSchedule.ID,
 	}
 	var subscription Subscription
-	db().Where(attrs).Assign(values).FirstOrCreate(&subscription, values)
+	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)
 	return subscription
 }
 

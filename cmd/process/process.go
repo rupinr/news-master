@@ -74,28 +74,28 @@ func enabledOnSaturday(subscription actions.Subscription) bool {
 }
 
 func fireNotificationInTimeSlot(timeInLocation time.Time, subscription actions.Subscription) {
-	if subscription.SubscriptionSchedule.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == Morning {
+	if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Morning {
 		fmt.Printf("%v can get Morning notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == Afternoon {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Afternoon {
 		fmt.Printf("%v can get Afternoon notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == Evening {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Evening {
 		fmt.Printf("%v can get Evening notifcation\n", subscription.User.Email)
-	} else if subscription.SubscriptionSchedule.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == Night {
+	} else if subscription.SubscriptionSchedule.TimeSlotEnum == actions.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == actions.Night {
 		fmt.Printf("%v can get Night notifcation\n", subscription.User.Email)
 	}
 }
 
-func timeSlotInLocation(currentServerTime time.Time, schedule actions.SubscriptionSchedule) TimeSlot {
+func timeSlotInLocation(currentServerTime time.Time, schedule actions.SubscriptionSchedule) actions.TimeSlot {
 	location, _ := time.LoadLocation(schedule.TimeZone)
 	localTime := currentServerTime.In(location)
 	if isMorning(localTime, *location) {
-		return Morning
+		return actions.Morning
 	} else if isAfterNoon(localTime, *location) {
-		return Afternoon
+		return actions.Afternoon
 	} else if isEvening(localTime, *location) {
-		return Evening
+		return actions.Evening
 	} else {
-		return Night
+		return actions.Night
 	}
 }
 
@@ -113,19 +113,10 @@ func isAfterNoon(localtime time.Time, location time.Location) bool {
 
 func isEvening(localtime time.Time, location time.Location) bool {
 	eighteen := timeOf(localtime, 18, &location)
-	twenty := timeOf(localtime, 12, &location)
+	twenty := timeOf(localtime, 20, &location)
 	return localtime.After(eighteen) && localtime.Equal(twenty) || localtime.Before(twenty)
 }
 
 func timeOf(localTime time.Time, hour int, location *time.Location) time.Time {
 	return time.Date(localTime.Year(), localTime.Month(), localTime.Day(), hour, 0, 0, 0, location)
 }
-
-type TimeSlot int
-
-const (
-	Morning TimeSlot = iota
-	Afternoon
-	Evening
-	Night
-)

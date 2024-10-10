@@ -56,12 +56,9 @@ func main() {
 				Friday:    createdSub.SubscriptionSchedule.Friday,
 				Saturday:  createdSub.SubscriptionSchedule.Saturday,
 				Sunday:    createdSub.SubscriptionSchedule.Sunday,
-			}, TimeSlot: actions.TimeSlot{
-				Morning:   createdSub.SubscriptionSchedule.Morning,
-				Afternoon: createdSub.SubscriptionSchedule.Afternoon,
-				Evening:   createdSub.SubscriptionSchedule.Evening,
-				Night:     createdSub.SubscriptionSchedule.Night,
-			}, TimeZone: createdSub.SubscriptionSchedule.TimeZone}
+			},
+				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
+				TimeSlot: createdSub.SubscriptionSchedule.TimeSlotEnum}
 			s := actions.SubscriptionData{
 				Email:                    createdSub.User.Email,
 				Topics:                   pq.StringArray(createdSub.Topics),
@@ -81,7 +78,7 @@ func main() {
 		sub := actions.GetSubscriptionByEmail(email)
 		fmt.Printf("sub schedule id is %v\n", sub.SubscriptionSchedule)
 		subData := actions.SubscriptionData{
-			Email:  email,
+			Email:  sub.User.Email,
 			Topics: sub.Topics,
 			Sites:  sub.Sites,
 			SubscriptionScheduleData: actions.SubscriptionScheduleData{
@@ -93,12 +90,9 @@ func main() {
 					Friday:    sub.SubscriptionSchedule.Friday,
 					Saturday:  sub.SubscriptionSchedule.Saturday,
 					Sunday:    sub.SubscriptionSchedule.Sunday,
-				}, TimeSlot: actions.TimeSlot{
-					Morning:   sub.SubscriptionSchedule.Morning,
-					Afternoon: sub.SubscriptionSchedule.Afternoon,
-					Evening:   sub.SubscriptionSchedule.Evening,
-					Night:     sub.SubscriptionSchedule.Night,
-				}, TimeZone: sub.SubscriptionSchedule.TimeZone,
+				},
+				TimeSlot: sub.SubscriptionSchedule.TimeSlotEnum,
+				TimeZone: sub.SubscriptionSchedule.TimeZone,
 			},
 		}
 

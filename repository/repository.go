@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"news-master/datamodels/dto"
 	"news-master/datamodels/entity"
+	"os"
 	"sync"
 
 	"github.com/lib/pq"
@@ -12,9 +13,19 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func CreateTopic(topicData dto.Topic) {
-	var topicDB entity.Topic
-	db().Where(entity.Topic{Name: topicData.Name}).FirstOrCreate(&topicDB)
+type DbError struct {
+	Message string
+	Code    int
+}
+
+func (e *DbError) Error() string {
+	return fmt.Sprintf("Error %d: %s", e.Code, e.Message)
+}
+
+func CreateTopic(topicData dto.Topic) (entity.Topic, error) {
+	var topic entity.Topic
+	err := db().Where(entity.Topic{Name: topicData.Name}).FirstOrCreate(&topic).Error
+	return topic, err
 }
 
 func CreateSite(siteData dto.Site) {
@@ -29,21 +40,15 @@ func CreateUser(userData dto.User) entity.User {
 	return user
 }
 
-func GetSubscriptionByEmail(email string) entity.Subscription {
+func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	var user entity.User
-	db().Find(&user, entity.User{Email: email})
-
-	fmt.Printf("user id is %v \n", user.Email)
-
+	result := db().First(&user, entity.User{Email: email})
+	fmt.Println(result.Error)
 	var subscription entity.Subscription
 
-	r :=
-		db().Joins("SubscriptionSchedule").Joins("User").Joins("SubscriptionSchedule").Find(&subscription, entity.Subscription{UserID: user.ID})
-	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
+	db().Joins("SubscriptionSchedule").Joins("User").Joins("SubscriptionSchedule").Find(&subscription, entity.Subscription{UserID: user.ID})
 
-	fmt.Printf("sub id is %v \n", subscription.ID)
-
-	return subscription
+	return subscription, result.Error
 }
 
 func GetSubscriptionByID(id int) entity.Subscription {
@@ -112,8 +117,14 @@ var (
 
 func db() *gorm.DB {
 	once.Do(func() {
-		dsn := "host=localhost user=postgres password=password dbname=news-master port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-		dataBase, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+		dbUser := os.Getenv("DB_USER")
+		dbPassword := os.Getenv("DB_PASSWORD")
+		dbHost := os.Getenv("DB_HOST")
+		dbPort := os.Getenv("DB_PORT")
+		dbName := os.Getenv("DB_NAME")
+		dbSslMode := os.Getenv("DB_SSL_MODE")
+		cStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPassword, dbName, dbPort, dbSslMode)
+		dataBase, err = gorm.Open(postgres.Open(cStr), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 		if err != nil {
 			panic("Unable to connect to db")
 		}

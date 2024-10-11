@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"news-master/auth"
 	"news-master/datamodels/dto"
+	"news-master/env"
 	"news-master/repository"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -17,29 +20,45 @@ type Subscription struct {
 	Sites  []string `form:"sites"`
 }
 
+var loadEnvOnce sync.Once
+
+type Error struct {
+	Message string
+}
+
+func (err Error) Error() string {
+	return err.Message
+}
+
 func main() {
+	loadEnvOnce.Do(env.LoadEnv)
 	repository.Migrate()
 	r := gin.Default()
-	r.POST("/topic", func(c *gin.Context) {
+
+	r.POST("/topic", auth.AuthMiddleware(), func(c *gin.Context) {
 		var topic dto.Topic
-		if c.ShouldBind(&topic) == nil {
+		if c.ShouldBindJSON(&topic) == nil {
 			repository.CreateTopic(topic)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
-		c.String(200, "Success")
+
 	})
 
-	r.POST("/site", func(c *gin.Context) {
+	r.POST("/site", auth.AuthMiddleware(), func(c *gin.Context) {
 		var site dto.Site
-		if c.ShouldBind(&site) == nil {
-			fmt.Println(site)
+		if c.ShouldBindJSON(&site) == nil {
 			repository.CreateSite(site)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
-		c.String(200, "Success")
 	})
 
+	//TODO add confirmation for subscription.. first save with some unverfied status.
+	//Update to verified only when clicking on email..
 	r.POST("/subscribe", func(c *gin.Context) {
 		var subscriptionData dto.Subscription
-		if c.ShouldBind(&subscriptionData) == nil {
+		if c.ShouldBindJSON(&subscriptionData) == nil {
 			user := repository.CreateUser(dto.User{Email: subscriptionData.Email})
 
 			fmt.Printf("user id is %v\n", user.ID)
@@ -70,35 +89,50 @@ func main() {
 			jsonData, _ := json.Marshal(s)
 
 			c.Data(http.StatusOK, "application/json", jsonData)
+		} else {
+			c.JSON(400, gin.H{"error": "Invalid request"})
 		}
 	})
 
+	//implement confirm endpoint which validates token and changes verified status to true for subscription
+	r.POST("/confirm", func(c *gin.Context) {
+
+	})
+
+	//TODO check token from email param... token is only valid lifelong
 	r.GET("/subscription", func(c *gin.Context) {
 		email := c.Query("email")
-		fmt.Println(email)
-		sub := repository.GetSubscriptionByEmail(email)
-		fmt.Printf("sub schedule id is %v\n", sub.SubscriptionSchedule)
-		subData := dto.Subscription{
-			Email:  sub.User.Email,
-			Topics: sub.Topics,
-			Sites:  sub.Sites,
-			SubscriptionScheduleData: dto.SubscriptionSchedule{
-				DailyFrequency: dto.DailyFrequency{
-					Monday:    sub.SubscriptionSchedule.Monday,
-					Tuesday:   sub.SubscriptionSchedule.Tuesday,
-					Wednesday: sub.SubscriptionSchedule.Wednesday,
-					Thursday:  sub.SubscriptionSchedule.Thursday,
-					Friday:    sub.SubscriptionSchedule.Friday,
-					Saturday:  sub.SubscriptionSchedule.Saturday,
-					Sunday:    sub.SubscriptionSchedule.Sunday,
-				},
-				TimeSlot: sub.SubscriptionSchedule.TimeSlotEnum,
-				TimeZone: sub.SubscriptionSchedule.TimeZone,
-			},
+		if email == "" {
+			c.JSON(404, gin.H{"error": "Invalid request"})
+		} else {
+			sub, err := repository.GetSubscriptionByEmail(email)
+
+			if err == nil {
+				subData := dto.Subscription{
+					Email:  sub.User.Email,
+					Topics: sub.Topics,
+					Sites:  sub.Sites,
+					SubscriptionScheduleData: dto.SubscriptionSchedule{
+						DailyFrequency: dto.DailyFrequency{
+							Monday:    sub.SubscriptionSchedule.Monday,
+							Tuesday:   sub.SubscriptionSchedule.Tuesday,
+							Wednesday: sub.SubscriptionSchedule.Wednesday,
+							Thursday:  sub.SubscriptionSchedule.Thursday,
+							Friday:    sub.SubscriptionSchedule.Friday,
+							Saturday:  sub.SubscriptionSchedule.Saturday,
+							Sunday:    sub.SubscriptionSchedule.Sunday,
+						},
+						TimeSlot: sub.SubscriptionSchedule.TimeSlotEnum,
+						TimeZone: sub.SubscriptionSchedule.TimeZone,
+					},
+				}
+				jsonData, _ := json.Marshal(subData)
+				c.Data(http.StatusOK, "application/json", jsonData)
+			} else {
+				c.JSON(404, gin.H{"error": "Invalid request"})
+			}
 		}
 
-		jsonData, _ := json.Marshal(subData)
-		c.Data(http.StatusOK, "application/json", jsonData)
 	})
 	r.Run()
 }

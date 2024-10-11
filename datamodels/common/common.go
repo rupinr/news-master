@@ -8,3 +8,7 @@ const (
 	Evening   TimeSlot = "Evening"
 	Night     TimeSlot = "Night"
 )
+
+type Test struct {
+	Some string
+}

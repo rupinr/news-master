@@ -7,36 +7,36 @@ import (
 )
 
 type Topic struct {
-	Name string `form:"name"`
+	Name string `json:"name" binding:"required"`
 }
 
 type Site struct {
-	Url string `form:"url"`
+	Url string `json:"url" binding:"required"`
 }
 
 type User struct {
-	Email string `form:"email"`
+	Email string `json:"email" binding:"required"`
 }
 
 type Subscription struct {
-	Email                    string               `form:"email" json:"email"`
-	Topics                   pq.StringArray       `form:"topics" json:"topics"`
-	Sites                    pq.StringArray       `form:"sites" json:"sites"`
-	SubscriptionScheduleData SubscriptionSchedule `form:"subscriptionSchedule" json:"subscriptionSchedule"`
+	Email                    string               `json:"email" binding:"required"`
+	Topics                   pq.StringArray       `json:"topics" binding:"required"`
+	Sites                    pq.StringArray       `json:"sites" binding:"required"`
+	SubscriptionScheduleData SubscriptionSchedule `json:"subscriptionSchedule" binding:"required"`
 }
 
 type DailyFrequency struct {
-	Monday    bool `form:"monday" json:"monday"`
-	Tuesday   bool `form:"tuesday" json:"tuesday"`
-	Wednesday bool `form:"wednesday" json:"wednesday"`
-	Thursday  bool `form:"thursday" json:"thursday"`
-	Friday    bool `form:"friday" json:"friday"`
-	Saturday  bool `form:"staturday" json:"staturday"`
-	Sunday    bool `form:"sunday" json:"sunday"`
+	Monday    bool `json:"monday" binding:"required"`
+	Tuesday   bool `json:"tuesday" binding:"required"`
+	Wednesday bool `json:"wednesday" binding:"required"`
+	Thursday  bool `json:"thursday" binding:"required"`
+	Friday    bool `json:"friday" binding:"required"`
+	Saturday  bool `json:"staturday" binding:"required"`
+	Sunday    bool `json:"sunday" binding:"required"`
 }
 
 type SubscriptionSchedule struct {
-	DailyFrequency DailyFrequency  `form:"dailyFrequency" json:"dailyFrequency"`
-	TimeSlot       common.TimeSlot `form:"timeSlot" json:"timeSlot"`
-	TimeZone       string          `form:"timezone" json:"timezone"`
+	DailyFrequency DailyFrequency  `json:"dailyFrequency" binding:"required"`
+	TimeSlot       common.TimeSlot `json:"timeSlot" binding:"required"`
+	TimeZone       string          `json:"timezone" binding:"required"`
 }

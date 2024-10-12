@@ -8,6 +8,7 @@ import (
 	"news-master/datamodels/dto"
 	"news-master/env"
 	"news-master/repository"
+	"news-master/service"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +31,14 @@ func (err Error) Error() string {
 	return err.Message
 }
 
+func Init() {
+	env.LoadEnv()
+	auth.InitKeys()
+}
+
 func main() {
-	loadEnvOnce.Do(env.LoadEnv)
+	loadEnvOnce.Do(Init)
+
 	repository.Migrate()
 	r := gin.Default()
 
@@ -78,7 +85,7 @@ func main() {
 
 			fmt.Printf("schedule id is %v\n", schedule.ID)
 
-			sub := repository.CreateSubscription(subscriptionData, user, schedule)
+			sub := service.FirstOrCreateSubscription(subscriptionData, user, schedule)
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
 			subData := dto.SubscriptionSchedule{DailyFrequency: dto.DailyFrequency{
 				Monday:    createdSub.SubscriptionSchedule.Monday,
@@ -107,6 +114,8 @@ func main() {
 	})
 
 	//implement confirm endpoint which validates token and changes verified status to true for subscription
+
+	// FIx, any token can confirm any subscription....IMPORTTNA
 	r.POST("/confirm", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var confirmation dto.SubscriptionConfirmation
 		if c.ShouldBindJSON(&confirmation) == nil {

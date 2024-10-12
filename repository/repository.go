@@ -149,7 +149,7 @@ func db() *gorm.DB {
 		dbName := os.Getenv("DB_NAME")
 		dbSslMode := os.Getenv("DB_SSL_MODE")
 		cStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPassword, dbName, dbPort, dbSslMode)
-		dataBase, err = gorm.Open(postgres.Open(cStr), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+		dataBase, err = gorm.Open(postgres.Open(cStr), &gorm.Config{Logger: logger.Default.LogMode(getLogMode())})
 		if err != nil {
 			panic("Unable to connect to db")
 		}
@@ -159,4 +159,15 @@ func db() *gorm.DB {
 	})
 
 	return dataBase
+}
+
+func getLogMode() logger.LogLevel {
+	switch os.Getenv("GORM_LOG_MODE") {
+	case "error":
+		return logger.Error
+	case "info":
+		return logger.Info
+	default:
+		return logger.Error
+	}
 }

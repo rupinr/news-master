@@ -9,7 +9,8 @@ import (
 
 type Topic struct {
 	gorm.Model
-	Name string
+	Name    string
+	Visible bool
 }
 type Site struct {
 	gorm.Model

@@ -23,9 +23,27 @@ func (e *DbError) Error() string {
 }
 
 func CreateTopic(topicData dto.Topic) (entity.Topic, error) {
-	var topic entity.Topic
+	topic := entity.Topic{Visible: false}
 	err := db().Where(entity.Topic{Name: topicData.Name}).FirstOrCreate(&topic).Error
 	return topic, err
+}
+
+func UpdateTopic(name string, visibility bool) error {
+	err = db().Transaction(func(tx *gorm.DB) error {
+		var topic entity.Topic
+		if err := tx.Where(&entity.Topic{Name: name}).First(&topic).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return fmt.Errorf("topic not found")
+			}
+			return err
+		}
+		topic.Visible = visibility
+		if err := tx.Save(&topic).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func CreateSite(siteData dto.Site) {

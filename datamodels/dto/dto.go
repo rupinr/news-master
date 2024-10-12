@@ -7,7 +7,12 @@ import (
 )
 
 type Topic struct {
-	Name string `json:"name" binding:"required"`
+	Name    string `json:"name" binding:"required"`
+	Visible bool   `json:"visible"`
+}
+
+type TopicUpdate struct {
+	Visibility *bool `json:"visibility" binding:"required"`
 }
 
 type Site struct {

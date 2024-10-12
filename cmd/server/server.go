@@ -42,7 +42,19 @@ func main() {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
+	})
 
+	r.PUT("/topic/:topic", auth.AuthMiddleware(), func(c *gin.Context) {
+		topicName := c.Param("topic")
+		var update dto.TopicUpdate
+		if c.ShouldBindJSON(&update) == nil {
+			err := repository.UpdateTopic(topicName, *update.Visibility)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		}
 	})
 
 	r.POST("/site", auth.AuthMiddleware(), func(c *gin.Context) {

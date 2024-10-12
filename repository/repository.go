@@ -111,7 +111,8 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 
 func CreateSubscription(subscriptionData dto.Subscription, user entity.User, subscriptionSchedule entity.SubscriptionSchedule) entity.Subscription {
 	attrs := entity.Subscription{
-		UserID: user.ID,
+		UserID:    user.ID,
+		Confirmed: false, //By default subscription is always created with false. User need to confirm it in a new step.
 	}
 	values := entity.Subscription{
 		Topics:                 pq.StringArray(subscriptionData.Topics),
@@ -121,6 +122,12 @@ func CreateSubscription(subscriptionData dto.Subscription, user entity.User, sub
 	var subscription entity.Subscription
 	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)
 	return subscription
+}
+
+func UpdateSubscriptionConfirmation(email string, status bool) {
+	fmt.Println(email)
+	fmt.Println(status)
+
 }
 
 func Migrate() {

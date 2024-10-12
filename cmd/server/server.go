@@ -35,7 +35,7 @@ func main() {
 	repository.Migrate()
 	r := gin.Default()
 
-	r.POST("/topic", auth.AuthMiddleware(), func(c *gin.Context) {
+	r.POST("/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var topic dto.Topic
 		if c.ShouldBindJSON(&topic) == nil {
 			repository.CreateTopic(topic)
@@ -44,7 +44,7 @@ func main() {
 		}
 	})
 
-	r.PUT("/topic/:topic", auth.AuthMiddleware(), func(c *gin.Context) {
+	r.PUT("/topic/:topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		topicName := c.Param("topic")
 		var update dto.TopicUpdate
 		if c.ShouldBindJSON(&update) == nil {
@@ -57,7 +57,7 @@ func main() {
 		}
 	})
 
-	r.POST("/site", auth.AuthMiddleware(), func(c *gin.Context) {
+	r.POST("/site", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var site dto.Site
 		if c.ShouldBindJSON(&site) == nil {
 			repository.CreateSite(site)
@@ -107,7 +107,13 @@ func main() {
 	})
 
 	//implement confirm endpoint which validates token and changes verified status to true for subscription
-	r.POST("/confirm", func(c *gin.Context) {
+	r.POST("/confirm", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
+		var confirmation dto.SubscriptionConfirmation
+		if c.ShouldBindJSON(&confirmation) == nil {
+			repository.UpdateSubscriptionConfirmation(confirmation.Email, *confirmation.Confirmed)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		}
 
 	})
 

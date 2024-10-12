@@ -28,6 +28,7 @@ type Subscription struct {
 	Sites                  pq.StringArray `gorm:"type:text[]"`
 	SubscriptionScheduleID uint
 	SubscriptionSchedule   SubscriptionSchedule
+	Confirmed              bool
 }
 type SubscriptionSchedule struct {
 	gorm.Model

@@ -11,7 +11,23 @@ type Token struct {
 	Value string
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func (token *Token) valid() bool {
+	return token.Value == os.Getenv("ADMIN_TOKEN")
+}
+
+func (token *Token) validSubscriberToken() bool {
+	return true
+}
+
+func ValidateAdminToken(token Token) bool {
+	return token.valid()
+}
+
+func ValidateSubscriberToken(token Token) bool {
+	return token.validSubscriberToken()
+}
+
+func AuthMiddleware(validateToken func(Token) bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := Token{Value: c.Request.Header.Get("Authorization")}
 		if token.Value == "" {
@@ -19,17 +35,11 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		if !token.valid() {
+		if !validateToken(token) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
-
 		c.Next()
 	}
-}
-
-func (token *Token) valid() bool {
-	return token.Value == os.Getenv("ADMIN_TOKEN")
 }

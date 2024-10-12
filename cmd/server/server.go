@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"news-master/auth"
 	"news-master/datamodels/dto"
-	"news-master/env"
 	"news-master/repository"
 	"news-master/service"
-	"sync"
+	"news-master/startup"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -21,8 +20,6 @@ type Subscription struct {
 	Sites  []string `form:"sites"`
 }
 
-var loadEnvOnce sync.Once
-
 type Error struct {
 	Message string
 }
@@ -31,13 +28,8 @@ func (err Error) Error() string {
 	return err.Message
 }
 
-func Init() {
-	env.LoadEnv()
-	auth.InitKeys()
-}
-
 func main() {
-	loadEnvOnce.Do(Init)
+	startup.Init()
 
 	repository.Migrate()
 	r := gin.Default()
@@ -119,7 +111,9 @@ func main() {
 	r.POST("/confirm", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var confirmation dto.SubscriptionConfirmation
 		if c.ShouldBindJSON(&confirmation) == nil {
-			repository.UpdateSubscriptionConfirmation(confirmation.Email, *confirmation.Confirmed)
+			contextUser, _ := c.Get("user")
+			user := contextUser.(*auth.DecodedUser)
+			repository.UpdateSubscriptionConfirmation(uint(user.ID), *confirmation.Confirmed)
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}

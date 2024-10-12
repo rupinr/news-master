@@ -18,7 +18,7 @@ func FirstOrCreateSubscription(
 
 	fmt.Printf("C Status %v\n", sub.Confirmed)
 	if !sub.Confirmed {
-		token, err := auth.SubsriberToken(user.Email, 24)
+		token, err := auth.SubsriberToken(int(user.ID), user.Email, 24)
 		fmt.Printf("token error %v\n", err)
 		if err == nil {
 			go fmt.Printf("Send Email.. inbackground. JWT token is %s", token)

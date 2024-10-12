@@ -32,8 +32,7 @@ type Subscription struct {
 }
 
 type SubscriptionConfirmation struct {
-	Email     string `json:"email" binding:"required"`
-	Confirmed *bool  `json:"confirmed" binding:"required"`
+	Confirmed *bool `json:"confirmed" binding:"required"`
 }
 
 type DailyFrequency struct {

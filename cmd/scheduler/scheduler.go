@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
-	"news-master/actions"
 	"news-master/cmd/process"
+	"news-master/repository"
+	"news-master/startup"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
 )
 
 func main() {
+	startup.Init()
 	// create a scheduler
 	s, err := gocron.NewScheduler()
 	if err != nil {
@@ -24,10 +26,12 @@ func main() {
 		),
 		gocron.NewTask(
 			func() {
-				for _, elem := range actions.GetAllSubscriptions() {
-					process.Notify(time.Now(), elem)
-					fmt.Printf("Subscription for %v\n", elem.User.Email)
-					fmt.Printf("SubscriptionTopic for %v\n", elem.Topics)
+				for _, subscription := range repository.GetAllSubscriptions() {
+					if subscription.Confirmed {
+						process.Notify(time.Now(), subscription)
+						fmt.Printf("Subscription for %v\n", subscription.User.Email)
+						fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)
+					}
 				}
 			},
 		),

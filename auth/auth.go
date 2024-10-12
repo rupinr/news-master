@@ -15,6 +15,22 @@ type Token struct {
 	Value string
 }
 
+type DecodedUser struct {
+	Valid bool
+	Admin bool
+	ID    uint
+	Email string
+}
+
+func defaultDecodedUser() *DecodedUser {
+	return &DecodedUser{
+		Valid: false,
+		Admin: false,
+		ID:    0,
+		Email: "",
+	}
+}
+
 var (
 	privateKey *rsa.PrivateKey
 	errPvtKey  error
@@ -22,7 +38,7 @@ var (
 	errPubKey  error
 )
 
-func InitKeys() {
+func LoadKeys() {
 	fmt.Printf("Initing Keys.....")
 	privateKey, errPvtKey = loadPrivateKey()
 	publicKey, errPubKey = loadPublicKey()
@@ -48,45 +64,51 @@ func loadPublicKey() (*rsa.PublicKey, error) {
 	return jwt.ParseRSAPublicKeyFromPEM(publicKeyData)
 }
 
-func (token *Token) validAdminToken() bool {
-	return token.Value == os.Getenv("ADMIN_TOKEN")
-}
-
-func (token *Token) validSubscriberToken() bool {
-	_, err := ValidateJWT(token.Value)
-	if err == nil {
-		return true
-	} else {
-		return false
+func (token *Token) validateAdminToken() *DecodedUser {
+	user := defaultDecodedUser()
+	if token.Value == os.Getenv("ADMIN_TOKEN") {
+		user.Admin = true
+		user.Valid = true
 	}
+	return user
 }
 
-func ValidateAdminToken(token Token) bool {
-	return token.validAdminToken()
+func (token *Token) validateSubscriberToken() *DecodedUser {
+	user, _ := ValidateJWT(token.Value)
+	return user
+
 }
 
-func ValidateSubscriberToken(token Token) bool {
-	return token.validSubscriberToken()
+func ValidateAdminToken(token Token) *DecodedUser {
+	return token.validateAdminToken()
 }
 
-func AuthMiddleware(validateToken func(Token) bool) gin.HandlerFunc {
+func ValidateSubscriberToken(token Token) *DecodedUser {
+	return token.validateSubscriberToken()
+}
+
+func AuthMiddleware(validateToken func(Token) *DecodedUser) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := Token{Value: c.Request.Header.Get("Authorization")}
+		user := validateToken(token)
+
 		if token.Value == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
 			c.Abort()
 			return
 		}
-		if !validateToken(token) {
+		if !user.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
+		c.Set("user", user)
 		c.Next()
 	}
 }
 
-func ValidateJWT(tokenString string) (*jwt.Token, error) {
+func ValidateJWT(tokenString string) (*DecodedUser, error) {
+	user := defaultDecodedUser()
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -95,26 +117,29 @@ func ValidateJWT(tokenString string) (*jwt.Token, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return user, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println("Token is valid.")
-		fmt.Println("Username:", claims["email"])
-		fmt.Println("Expiration:", claims["exp"])
+		user.Admin = false
+		user.Valid = true
+		user.Email = claims["email"].(string)
+		user.ID = uint(claims["id"].(float64))
+
 	} else {
 		fmt.Println("Invalid token.")
 	}
 
-	return token, nil
+	return user, nil
 }
 
-func SubsriberToken(email string, validityInHours int) (string, error) {
+func SubsriberToken(id int, email string, validityInHours int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(time.Duration(validityInHours) * time.Hour).Unix(),
+		"id":    id,
 	})
-	tokenString, err := token.SignedString(&privateKey)
+	tokenString, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", err
 	}

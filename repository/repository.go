@@ -84,8 +84,8 @@ func GetSubscriptionByID(id int) entity.Subscription {
 func GetAllSubscriptions() []entity.Subscription {
 
 	var subscriptions []entity.Subscription
-
-	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions)
+	conditions := entity.Subscription{Confirmed: true}
+	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions, conditions)
 	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
 
 	return subscriptions
@@ -124,9 +124,22 @@ func CreateSubscription(subscriptionData dto.Subscription, user entity.User, sub
 	return subscription
 }
 
-func UpdateSubscriptionConfirmation(email string, status bool) {
-	fmt.Println(email)
-	fmt.Println(status)
+func UpdateSubscriptionConfirmation(id uint, confirmed bool) error {
+	err = db().Transaction(func(tx *gorm.DB) error {
+		var subscription entity.Subscription
+		if err := tx.Where(&entity.Subscription{UserID: id}).First(&subscription).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return fmt.Errorf("topic not found")
+			}
+			return err
+		}
+		subscription.Confirmed = confirmed
+		if err := tx.Save(&subscription).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 
 }
 

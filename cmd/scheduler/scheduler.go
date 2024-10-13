@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"news-master/cmd/process"
 	"news-master/repository"
 	"news-master/startup"
+	"os"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
@@ -20,9 +23,9 @@ func main() {
 
 	// add a job to the scheduler
 
-	j, err := s.NewJob(
+	subscriptionJob, subscriptionJoberr := s.NewJob(
 		gocron.CronJob(
-			"* * * * * *", true,
+			"0 * * * *", false,
 		),
 		gocron.NewTask(
 			func() {
@@ -37,11 +40,45 @@ func main() {
 		),
 	)
 
-	if err != nil {
+	newsFetchJob, newsFetchJobErr := s.NewJob(
+		gocron.CronJob(
+			"* * * * * *", true,
+		),
+		gocron.NewTask(
+			func() {
+
+				sites := repository.GetActiveSites()
+				for _, site := range sites {
+					resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", os.Getenv("NEWS_DATA_API_URL"), os.Getenv("NEWS_DATA_API_KEY"), site.Url))
+					if err != nil {
+						// handle error
+						fmt.Println("Error:", err)
+						return
+					}
+					defer resp.Body.Close()
+
+					body, err := io.ReadAll(resp.Body)
+					if err != nil {
+						// handle error
+						fmt.Println("Error:", err)
+						return
+					}
+					fmt.Println(string(body))
+
+				}
+
+			},
+		),
+	)
+	if subscriptionJoberr != nil || newsFetchJobErr != nil {
+		fmt.Println(subscriptionJoberr)
+		fmt.Println(newsFetchJobErr)
+
 		panic("Error in scheduler")
 	}
 	// each job has a unique id
-	fmt.Println(j.ID())
+	fmt.Println(subscriptionJob.ID())
+	fmt.Println(newsFetchJob.ID())
 
 	// start the scheduler
 	s.Start()

@@ -14,7 +14,8 @@ type Topic struct {
 }
 type Site struct {
 	gorm.Model
-	Url string
+	Url    string
+	Active bool
 }
 type User struct {
 	gorm.Model
@@ -41,4 +42,24 @@ type SubscriptionSchedule struct {
 	Saturday     bool
 	TimeSlotEnum common.TimeSlot
 	TimeZone     string
+}
+
+type Article struct {
+	gorm.Model
+	Status       string
+	TotalResults int
+	Results      []Result
+	NextPage     string
+}
+
+type Result struct {
+	Title       string
+	Link        string
+	Description string
+	Content     string
+	ImageURL    string
+	Language    string
+	Country     []string
+	Category    []string
+	AIRegion    string
 }

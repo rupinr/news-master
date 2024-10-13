@@ -51,6 +51,12 @@ func CreateSite(siteData dto.Site) {
 	db().Where(entity.Site{Url: siteData.Url}).FirstOrCreate(&siteDb)
 }
 
+func GetActiveSites() []entity.Site {
+	var sites []entity.Site
+	db().Where(entity.Site{Active: true}).Find(&sites)
+	return sites
+}
+
 func CreateUser(userData dto.User) entity.User {
 	userDb := entity.User{Email: userData.Email}
 	var user entity.User

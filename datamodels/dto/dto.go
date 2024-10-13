@@ -50,3 +50,22 @@ type SubscriptionSchedule struct {
 	TimeSlot       common.TimeSlot `json:"timeSlot" binding:"required"`
 	TimeZone       string          `json:"timezone" binding:"required"`
 }
+
+type Article struct {
+	Status       string   `json:"status"`
+	TotalResults int      `json:"totalResults"`
+	Results      []Result `json:"results"`
+	NextPage     string   `json:"nextPage"`
+}
+
+type Result struct {
+	Title       string   `json:"title"`
+	Link        string   `json:"link"`
+	Description string   `json:"description"`
+	Content     string   `json:"content"`
+	ImageURL    string   `json:"image_url"`
+	Language    string   `json:"language"`
+	Country     []string `json:"country"`
+	Category    []string `json:"category"`
+	AIRegion    string   `json:"ai_region"`
+}

@@ -31,7 +31,6 @@ func (err Error) Error() string {
 func main() {
 	startup.Init()
 
-	repository.Migrate()
 	r := gin.Default()
 
 	r.POST("/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {

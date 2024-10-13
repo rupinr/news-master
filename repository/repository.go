@@ -51,6 +51,21 @@ func CreateSite(siteData dto.Site) {
 	db().Where(entity.Site{Url: siteData.Url}).FirstOrCreate(&siteDb)
 }
 
+func CreateResult(result dto.Article) {
+	article := entity.Article{
+		Title:          result.Title,
+		Link:           result.Link,
+		Description:    result.Description,
+		Content:        result.Content,
+		ImageURL:       result.ImageURL,
+		Language:       result.Language,
+		Country:        pq.StringArray(result.Country),
+		Category:       pq.StringArray(result.Category),
+		DetectedTopics: nil,
+	}
+	db().Create(&article)
+}
+
 func GetActiveSites() []entity.Site {
 	var sites []entity.Site
 	db().Where(entity.Site{Active: true}).Find(&sites)
@@ -150,7 +165,7 @@ func UpdateSubscriptionConfirmation(id uint, confirmed bool) error {
 }
 
 func Migrate() {
-	db().AutoMigrate(&entity.Topic{}, &entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{})
+	db().AutoMigrate(&entity.Topic{}, &entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{}, &entity.Article{})
 }
 
 var (

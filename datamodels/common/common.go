@@ -3,10 +3,10 @@ package common
 type TimeSlot string
 
 const (
-	Morning   TimeSlot = "Morning"
-	Afternoon TimeSlot = "Afternoon"
-	Evening   TimeSlot = "Evening"
-	Night     TimeSlot = "Night"
+	Morning   TimeSlot = "Morning"   // 6:00 - 12:00
+	Afternoon TimeSlot = "Afternoon" // 12:00 - 18:00
+	Evening   TimeSlot = "Evening"   // 18:00 - 20:00
+	Night     TimeSlot = "Night"     // 20:00 - 06:00
 )
 
 type Test struct {

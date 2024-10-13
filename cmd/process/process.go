@@ -1,30 +1,30 @@
 package process
 
 import (
-	"fmt"
 	"news-master/datamodels/common"
 	"news-master/datamodels/entity"
 	"time"
 )
 
-func Notify(currentServerTime time.Time, subscription entity.Subscription) {
+func Notify(currentServerTime time.Time, subscription entity.Subscription) bool {
 	location, _ := time.LoadLocation(subscription.SubscriptionSchedule.TimeZone)
 	weekdayInLocation := currentServerTime.In(location).Weekday()
 	if enabledOnSunday(subscription) && isSundayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnMonday(subscription) && isMondayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnTuesday(subscription) && isTuesdayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnWednesday(subscription) && isWednesdayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnThursday(subscription) && isThursdayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnFriday(subscription) && isFridayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else if enabledOnSaturday(subscription) && isSaturdayInLocation(weekdayInLocation) {
-		fireNotificationInTimeSlot(currentServerTime, subscription)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	}
+	return false
 }
 
 func isSundayInLocation(weekday time.Weekday) bool {
@@ -74,16 +74,17 @@ func enabledOnSaturday(subscription entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Saturday
 }
 
-func fireNotificationInTimeSlot(timeInLocation time.Time, subscription entity.Subscription) {
+func fireNotificationInTimeSlot(timeInLocation time.Time, subscription entity.Subscription) bool {
 	if subscription.SubscriptionSchedule.TimeSlotEnum == common.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Morning {
-		fmt.Printf("%v can get Morning notifcation\n", subscription.User.Email)
+		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Afternoon {
-		fmt.Printf("%v can get Afternoon notifcation\n", subscription.User.Email)
+		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Evening {
-		fmt.Printf("%v can get Evening notifcation\n", subscription.User.Email)
+		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Night {
-		fmt.Printf("%v can get Night notifcation\n", subscription.User.Email)
+		return true
 	}
+	return false
 }
 
 func timeSlotInLocation(currentServerTime time.Time, schedule entity.SubscriptionSchedule) common.TimeSlot {

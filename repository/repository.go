@@ -79,6 +79,21 @@ func CreateUser(userData dto.User) entity.User {
 	return user
 }
 
+func GetUser(userData dto.User) entity.User {
+	userDb := entity.User{Email: userData.Email}
+	var user entity.User
+	db().Where(userDb).First(&user, userDb)
+	return user
+}
+
+func IncrementAndGetLoginAttempt(userData dto.User) entity.User {
+	user := entity.User{}
+	db().Where(entity.User{Email: userData.Email}).Find(&user)
+	user.LoginAttemptCount++
+	db().Save(&user)
+	return user
+}
+
 func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	var user entity.User
 	result := db().First(&user, entity.User{Email: email})
@@ -132,13 +147,13 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 
 func CreateSubscription(subscriptionData dto.Subscription, user entity.User, subscriptionSchedule entity.SubscriptionSchedule) entity.Subscription {
 	attrs := entity.Subscription{
-		UserID:    user.ID,
-		Confirmed: false, //By default subscription is always created with false. User need to confirm it in a new step.
+		UserID: user.ID,
 	}
 	values := entity.Subscription{
 		Topics:                 pq.StringArray(subscriptionData.Topics),
 		Sites:                  pq.StringArray(subscriptionData.Sites),
 		SubscriptionScheduleID: subscriptionSchedule.ID,
+		Confirmed:              true,
 	}
 	var subscription entity.Subscription
 	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)

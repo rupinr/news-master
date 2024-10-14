@@ -1,11 +1,14 @@
 package service
 
 import (
-	"fmt"
+	"errors"
 	"news-master/auth"
 	"news-master/datamodels/dto"
 	"news-master/datamodels/entity"
+	"news-master/email"
 	"news-master/repository"
+	"os"
+	"strconv"
 )
 
 func FirstOrCreateSubscription(
@@ -15,16 +18,20 @@ func FirstOrCreateSubscription(
 ) entity.Subscription {
 
 	sub := repository.CreateSubscription(subscriptionData, user, subscriptionSchedule)
-
-	fmt.Printf("C Status %v\n", sub.Confirmed)
-	if !sub.Confirmed {
-		token, err := auth.SubsriberToken(int(user.ID), user.Email, 24)
-		fmt.Printf("token error %v\n", err)
-		if err == nil {
-			go fmt.Printf("Send Email.. inbackground. JWT token is %s", token)
-		}
-	} else {
-		fmt.Println("Already confirmed sub, not need sent email")
-	}
 	return sub
+
+}
+
+func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
+	createdUser := repository.CreateUser(user)
+	maxLoginAttempt, _ := strconv.Atoi(os.Getenv("MAX_LOGIN_ATTEMPT"))
+	if createdUser.LoginAttemptCount < maxLoginAttempt {
+		repository.IncrementAndGetLoginAttempt(user)
+		token, _ := auth.SubsriberToken(createdUser.ID, user.Email, 24)
+		go email.SendEmail(createdUser.Email, token, "activate your email")
+		return createdUser, nil
+	} else {
+		return createdUser, errors.New("max Login attempt reached")
+	}
+
 }

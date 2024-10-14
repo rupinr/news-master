@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"news-master/auth"
 	"news-master/datamodels/dto"
@@ -64,17 +63,26 @@ func main() {
 		}
 	})
 
-	//TODO add confirmation for subscription.. first save with some unverfied status.
-	//Update to verified only when clicking on email..
-	r.POST("/subscribe", func(c *gin.Context) {
+	r.POST("/user", func(c *gin.Context) {
+		var user dto.User
+		if c.ShouldBindJSON(&user) == nil {
+			_, err := service.CreateUserAndTriggerLoginEmail(user)
+			if err != nil {
+				c.JSON(http.StatusTooManyRequests, gin.H{"error": "Max attempt reached."})
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		}
+	})
+
+	r.POST("/subscribe", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var subscriptionData dto.Subscription
 		if c.ShouldBindJSON(&subscriptionData) == nil {
-			user := repository.CreateUser(dto.User{Email: subscriptionData.Email})
+			cUser := auth.User(c)
 
-			fmt.Printf("user id is %v\n", user.ID)
+			user := repository.GetUser(dto.User{Email: cUser.Email})
+
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
-
-			fmt.Printf("schedule id is %v\n", schedule.ID)
 
 			sub := service.FirstOrCreateSubscription(subscriptionData, user, schedule)
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
@@ -90,7 +98,6 @@ func main() {
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
 				TimeSlot: createdSub.SubscriptionSchedule.TimeSlotEnum}
 			s := dto.Subscription{
-				Email:                    createdSub.User.Email,
 				Topics:                   pq.StringArray(createdSub.Topics),
 				Sites:                    pq.StringArray(createdSub.Sites),
 				SubscriptionScheduleData: subData,
@@ -104,24 +111,8 @@ func main() {
 		}
 	})
 
-	//implement confirm endpoint which validates token and changes verified status to true for subscription
-
-	// FIx, any token can confirm any subscription....IMPORTTNA
-	r.POST("/confirm", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
-		var confirmation dto.SubscriptionConfirmation
-		if c.ShouldBindJSON(&confirmation) == nil {
-			contextUser, _ := c.Get("user")
-			user := contextUser.(*auth.DecodedUser)
-			repository.UpdateSubscriptionConfirmation(uint(user.ID), *confirmation.Confirmed)
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-		}
-
-	})
-
-	//TODO check token from email param... token is only valid lifelong
-	r.GET("/subscription", func(c *gin.Context) {
-		email := c.Query("email")
+	r.GET("/subscription", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
+		email := auth.User(c).Email
 		if email == "" {
 			c.JSON(404, gin.H{"error": "Invalid request"})
 		} else {
@@ -129,7 +120,6 @@ func main() {
 
 			if err == nil {
 				subData := dto.Subscription{
-					Email:  sub.User.Email,
 					Topics: sub.Topics,
 					Sites:  sub.Sites,
 					SubscriptionScheduleData: dto.SubscriptionSchedule{

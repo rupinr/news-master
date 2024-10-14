@@ -25,7 +25,6 @@ type User struct {
 
 type Subscription struct {
 	Confirmed                bool                 `json:"confirmed"`
-	Email                    string               `json:"email" binding:"required"`
 	Topics                   pq.StringArray       `json:"topics" binding:"required"`
 	Sites                    pq.StringArray       `json:"sites" binding:"required"`
 	SubscriptionScheduleData SubscriptionSchedule `json:"subscriptionSchedule" binding:"required"`

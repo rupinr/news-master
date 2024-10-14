@@ -19,7 +19,8 @@ type Site struct {
 }
 type User struct {
 	gorm.Model
-	Email string `gorm:"uniqueIndex"`
+	Email             string `gorm:"uniqueIndex"`
+	LoginAttemptCount int
 }
 type Subscription struct {
 	gorm.Model

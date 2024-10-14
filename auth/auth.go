@@ -133,7 +133,7 @@ func ValidateJWT(tokenString string) (*DecodedUser, error) {
 	return user, nil
 }
 
-func SubsriberToken(id int, email string, validityInHours int) (string, error) {
+func SubsriberToken(id uint, email string, validityInHours int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(time.Duration(validityInHours) * time.Hour).Unix(),
@@ -145,4 +145,10 @@ func SubsriberToken(id int, email string, validityInHours int) (string, error) {
 	}
 
 	return tokenString, err
+}
+
+func User(c *gin.Context) *DecodedUser {
+	contextUser, _ := c.Get("user")
+	user := contextUser.(*DecodedUser)
+	return user
 }

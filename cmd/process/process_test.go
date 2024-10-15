@@ -20,9 +20,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 10, 0, 0, 0, time.UTC), // Sunday
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: true,
@@ -32,9 +32,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 13, 0, 0, 0, time.UTC), // Sunday
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Afternoon,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Afternoon,
 				},
 			},
 			expectedNotification: true,
@@ -44,9 +44,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 19, 0, 0, 0, time.UTC), // Sunday
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Evening,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Evening,
 				},
 			},
 			expectedNotification: true,
@@ -56,9 +56,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 21, 0, 0, 0, time.UTC), // Sunday
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Night,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Night,
 				},
 			},
 			expectedNotification: true,
@@ -68,9 +68,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 14, 0, 0, 0, time.UTC), // 10 AM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: true,
@@ -80,9 +80,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 17, 0, 0, 0, time.UTC), // 1 PM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Afternoon,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Afternoon,
 				},
 			},
 			expectedNotification: true,
@@ -92,9 +92,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 23, 0, 0, 0, time.UTC), // 7 PM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Evening,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Evening,
 				},
 			},
 			expectedNotification: true,
@@ -104,9 +104,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 14, 0, 0, 0, time.UTC), // 10 AM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: true,
@@ -116,9 +116,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 17, 0, 0, 0, time.UTC), // 1 PM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Afternoon,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Afternoon,
 				},
 			},
 			expectedNotification: true,
@@ -128,9 +128,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 23, 0, 0, 0, time.UTC), // 7 PM in New York (Eastern Daylight Time)
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "America/New_York",
-					Sunday:       true,
-					TimeSlotEnum: common.Evening,
+					TimeZone: "America/New_York",
+					Sunday:   true,
+					TimeSlot: common.Evening,
 				},
 			},
 			expectedNotification: true,
@@ -140,9 +140,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 10, 0, 0, 0, time.UTC),
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       false,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "UTC",
+					Sunday:   false,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: false,
@@ -153,9 +153,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 22, 0, 0, 0, time.UTC), // 10 PM
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: false,
@@ -166,9 +166,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 2, 8, 0, 0, 0, time.UTC),
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Sunday:       true,
-					TimeSlotEnum: common.Evening,
+					TimeZone: "UTC",
+					Sunday:   true,
+					TimeSlot: common.Evening,
 				},
 			},
 			expectedNotification: false,
@@ -179,9 +179,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 3, 21, 0, 0, 0, time.UTC),
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Monday:       true,
-					TimeSlotEnum: common.Evening,
+					TimeZone: "UTC",
+					Monday:   true,
+					TimeSlot: common.Evening,
 				},
 			},
 			expectedNotification: false,
@@ -192,9 +192,9 @@ func TestNotify(t *testing.T) {
 			currentServerTime: time.Date(2023, time.April, 4, 14, 0, 0, 0, time.UTC),
 			subscription: entity.Subscription{
 				SubscriptionSchedule: entity.SubscriptionSchedule{
-					TimeZone:     "UTC",
-					Tuesday:      true,
-					TimeSlotEnum: common.Morning,
+					TimeZone: "UTC",
+					Tuesday:  true,
+					TimeSlot: common.Morning,
 				},
 			},
 			expectedNotification: false,
@@ -203,7 +203,7 @@ func TestNotify(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := process.Notify(tt.currentServerTime, &tt.subscription)
+			got := process.Notify(&tt.currentServerTime, &tt.subscription, nil)
 			if got != tt.expectedNotification {
 				t.Errorf("Failed test %v, Notify() = %v, want %v", tt.name, got, tt.expectedNotification)
 			}

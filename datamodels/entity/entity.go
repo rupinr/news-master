@@ -33,6 +33,7 @@ type Subscription struct {
 	SubscriptionSchedule   SubscriptionSchedule
 	Confirmed              bool
 	LastProcessedAt        time.Time
+	//TODO FIxmne not updating ltimestamp
 }
 type SubscriptionSchedule struct {
 	gorm.Model

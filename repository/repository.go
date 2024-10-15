@@ -6,6 +6,7 @@ import (
 	"news-master/datamodels/entity"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -126,17 +127,27 @@ func GetAllSubscriptions() []entity.Subscription {
 
 	return subscriptions
 }
+
+func SetLastProcessedAt(subscriptionId uint) {
+	time := time.Now()
+	fmt.Printf("setting last processed at as %v for sub %v\n", time, subscriptionId)
+	var sub entity.Subscription
+	db().Find(sub, subscriptionId)
+	sub.LastProcessedAt = time
+	db().Save(sub)
+}
+
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {
 	subscriptionScheduleDb := entity.SubscriptionSchedule{
-		Monday:       subscriptionScheduleData.DailyFrequency.Monday,
-		Tuesday:      subscriptionScheduleData.DailyFrequency.Tuesday,
-		Wednesday:    subscriptionScheduleData.DailyFrequency.Wednesday,
-		Thursday:     subscriptionScheduleData.DailyFrequency.Thursday,
-		Friday:       subscriptionScheduleData.DailyFrequency.Friday,
-		Saturday:     subscriptionScheduleData.DailyFrequency.Saturday,
-		Sunday:       subscriptionScheduleData.DailyFrequency.Sunday,
-		TimeSlotEnum: subscriptionScheduleData.TimeSlot,
-		TimeZone:     subscriptionScheduleData.TimeZone,
+		Monday:    subscriptionScheduleData.DailyFrequency.Monday,
+		Tuesday:   subscriptionScheduleData.DailyFrequency.Tuesday,
+		Wednesday: subscriptionScheduleData.DailyFrequency.Wednesday,
+		Thursday:  subscriptionScheduleData.DailyFrequency.Thursday,
+		Friday:    subscriptionScheduleData.DailyFrequency.Friday,
+		Saturday:  subscriptionScheduleData.DailyFrequency.Saturday,
+		Sunday:    subscriptionScheduleData.DailyFrequency.Sunday,
+		TimeSlot:  subscriptionScheduleData.TimeSlot,
+		TimeZone:  subscriptionScheduleData.TimeZone,
 	}
 
 	fmt.Printf("Schedule %v\n", subscriptionScheduleDb)

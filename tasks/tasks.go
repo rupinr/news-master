@@ -49,7 +49,8 @@ func FetchNewsTask() {
 func SendNewsletter() {
 	for _, subscription := range repository.GetAllSubscriptions() {
 		if subscription.Confirmed {
-			process.Notify(time.Now(), &subscription)
+			time := time.Now()
+			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 			fmt.Printf("Subscription for %v\n", subscription.User.Email)
 			fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)
 		}

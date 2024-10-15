@@ -96,7 +96,7 @@ func main() {
 				Sunday:    createdSub.SubscriptionSchedule.Sunday,
 			},
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
-				TimeSlot: createdSub.SubscriptionSchedule.TimeSlotEnum}
+				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot}
 			s := dto.Subscription{
 				Topics:                   pq.StringArray(createdSub.Topics),
 				Sites:                    pq.StringArray(createdSub.Sites),
@@ -132,7 +132,7 @@ func main() {
 							Saturday:  sub.SubscriptionSchedule.Saturday,
 							Sunday:    sub.SubscriptionSchedule.Sunday,
 						},
-						TimeSlot: sub.SubscriptionSchedule.TimeSlotEnum,
+						TimeSlot: sub.SubscriptionSchedule.TimeSlot,
 						TimeZone: sub.SubscriptionSchedule.TimeZone,
 					},
 				}

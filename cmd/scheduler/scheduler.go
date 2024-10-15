@@ -19,7 +19,7 @@ func main() {
 	}
 	_, subscriptionJoberr := scheduler.NewJob(
 		gocron.CronJob(
-			os.Getenv("SUBSCRIPTION_MAIL_CRON"), false,
+			os.Getenv("SUBSCRIPTION_MAIL_CRON"), true,
 		),
 		gocron.NewTask(
 			tasks.SendNewsletter,
@@ -30,10 +30,14 @@ func main() {
 		gocron.CronJob(
 			os.Getenv("NEWS_FETCH_CRON"), true,
 		),
+
 		gocron.NewTask(tasks.FetchNewsTask),
 	)
+	fmt.Printf("JOBS %v", scheduler.Jobs()[0].ID())
+
 	if subscriptionJoberr != nil || newsFetchJobErr != nil {
-		panic(fmt.Sprintf("Error in jobs %v, %v", subscriptionJoberr, newsFetchJobErr))
+
+		panic(fmt.Sprintf("Error in jobs %v", newsFetchJobErr))
 	}
 
 	scheduler.Start()

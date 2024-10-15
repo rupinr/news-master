@@ -137,6 +137,13 @@ func SetLastProcessedAt(subscriptionId uint) {
 	db().Save(&sub)
 }
 
+func GetAllNewsFromDate(fromDate time.Time) []entity.Article {
+	var articles []entity.Article
+	db().Where("created_at > ?", fromDate).Find(&articles)
+	return articles
+
+}
+
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {
 	subscriptionScheduleDb := entity.SubscriptionSchedule{
 		Monday:    subscriptionScheduleData.DailyFrequency.Monday,

@@ -10,12 +10,21 @@ import (
 	"news-master/repository"
 	"os"
 	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 func FetchNewsTask() {
+	fmt.Println("-----running FetchNewsTask")
 	sites := repository.GetActiveSites()
+	fmt.Printf("Sites: %v", sites)
+
 	for _, site := range sites {
+		//TODO add logs, when there is no data..
+
 		resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", os.Getenv("NEWS_DATA_API_URL"), os.Getenv("NEWS_DATA_API_KEY"), site.Url))
+		fmt.Printf("Site: %v", site)
+
 		if err != nil {
 			// handle error
 			fmt.Println("Error:", err)
@@ -48,11 +57,18 @@ func FetchNewsTask() {
 
 func SendNewsletter() {
 	for _, subscription := range repository.GetAllSubscriptions() {
+
+		//TODO add logs, when there is no data..
 		if subscription.Confirmed {
 			time := time.Now()
+			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
+			articles := repository.GetAllNewsFromDate(subscription.LastProcessedAt)
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 			fmt.Printf("Subscription for %v\n", subscription.User.Email)
 			fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)
+			randomIndex := rand.Intn(len(articles))
+
+			fmt.Printf("Articles %v\n", articles[randomIndex].Title)
 		}
 	}
 }

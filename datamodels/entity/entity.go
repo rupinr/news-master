@@ -37,15 +37,15 @@ type Subscription struct {
 }
 type SubscriptionSchedule struct {
 	gorm.Model
-	Sunday       bool
-	Monday       bool
-	Tuesday      bool
-	Wednesday    bool
-	Thursday     bool
-	Friday       bool
-	Saturday     bool
-	TimeSlotEnum common.TimeSlot
-	TimeZone     string
+	Sunday    bool
+	Monday    bool
+	Tuesday   bool
+	Wednesday bool
+	Thursday  bool
+	Friday    bool
+	Saturday  bool
+	TimeSlot  common.TimeSlot
+	TimeZone  string
 }
 
 type Article struct {

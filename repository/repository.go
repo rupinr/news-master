@@ -132,9 +132,9 @@ func SetLastProcessedAt(subscriptionId uint) {
 	time := time.Now()
 	fmt.Printf("setting last processed at as %v for sub %v\n", time, subscriptionId)
 	var sub entity.Subscription
-	db().Find(sub, subscriptionId)
+	db().Find(&sub, subscriptionId)
 	sub.LastProcessedAt = time
-	db().Save(sub)
+	db().Save(&sub)
 }
 
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {

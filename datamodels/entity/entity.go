@@ -2,6 +2,7 @@ package entity
 
 import (
 	"news-master/datamodels/common"
+	"time"
 
 	"github.com/lib/pq"
 	"gorm.io/gorm"
@@ -31,6 +32,7 @@ type Subscription struct {
 	SubscriptionScheduleID uint
 	SubscriptionSchedule   SubscriptionSchedule
 	Confirmed              bool
+	LastProcessedAt        time.Time
 }
 type SubscriptionSchedule struct {
 	gorm.Model

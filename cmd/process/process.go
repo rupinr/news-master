@@ -1,30 +1,27 @@
 package process
 
 import (
+	"fmt"
 	"news-master/datamodels/common"
 	"news-master/datamodels/entity"
 	"time"
 )
 
-func Notify(currentServerTime time.Time, subscription entity.Subscription) bool {
+func Notify(currentServerTime time.Time, subscription *entity.Subscription) bool {
 	location, _ := time.LoadLocation(subscription.SubscriptionSchedule.TimeZone)
 	weekdayInLocation := currentServerTime.In(location).Weekday()
-	if enabledOnSunday(subscription) && isSundayInLocation(weekdayInLocation) {
+	if enabledOnSunday(subscription) && isSundayInLocation(weekdayInLocation) ||
+		enabledOnMonday(subscription) && isMondayInLocation(weekdayInLocation) ||
+		enabledOnTuesday(subscription) && isTuesdayInLocation(weekdayInLocation) ||
+		enabledOnWednesday(subscription) && isWednesdayInLocation(weekdayInLocation) ||
+		enabledOnThursday(subscription) && isThursdayInLocation(weekdayInLocation) ||
+		enabledOnFriday(subscription) && isFridayInLocation(weekdayInLocation) ||
+		enabledOnSaturday(subscription) && isSaturdayInLocation(weekdayInLocation) {
 		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnMonday(subscription) && isMondayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnTuesday(subscription) && isTuesdayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnWednesday(subscription) && isWednesdayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnThursday(subscription) && isThursdayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnFriday(subscription) && isFridayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
-	} else if enabledOnSaturday(subscription) && isSaturdayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription)
+	} else {
+		return false
 	}
-	return false
+
 }
 
 func isSundayInLocation(weekday time.Weekday) bool {
@@ -50,41 +47,63 @@ func isSaturdayInLocation(weekday time.Weekday) bool {
 	return weekday == time.Saturday
 }
 
-func enabledOnSunday(subscription entity.Subscription) bool {
+func enabledOnSunday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Sunday
 }
 
-func enabledOnMonday(subscription entity.Subscription) bool {
+func enabledOnMonday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Monday
 }
 
-func enabledOnTuesday(subscription entity.Subscription) bool {
+func enabledOnTuesday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Tuesday
 }
-func enabledOnWednesday(subscription entity.Subscription) bool {
+func enabledOnWednesday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Wednesday
 }
-func enabledOnThursday(subscription entity.Subscription) bool {
+func enabledOnThursday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Thursday
 }
-func enabledOnFriday(subscription entity.Subscription) bool {
+func enabledOnFriday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Friday
 }
-func enabledOnSaturday(subscription entity.Subscription) bool {
+func enabledOnSaturday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Saturday
 }
 
-func fireNotificationInTimeSlot(timeInLocation time.Time, subscription entity.Subscription) bool {
+func fireNotificationInTimeSlot(timeInLocation time.Time, subscription *entity.Subscription) bool {
 	if subscription.SubscriptionSchedule.TimeSlotEnum == common.Morning && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Morning {
+		sendEmail()
+		subscription.LastProcessedAt = time.Now()
+		fmt.Println(subscription.LastProcessedAt)
+		//TODO Save this to database......
+
+		//And when fetchin news, fetch everything created after last processed at.
+		//If last processed at is older than 1 day, fetch the last x items.
 		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Afternoon && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Afternoon {
+		sendEmail()
+		subscription.LastProcessedAt = time.Now()
+
 		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Evening && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Evening {
+		sendEmail()
+		subscription.LastProcessedAt = time.Now()
+
 		return true
 	} else if subscription.SubscriptionSchedule.TimeSlotEnum == common.Night && timeSlotInLocation(timeInLocation, subscription.SubscriptionSchedule) == common.Night {
+		sendEmail()
+		subscription.LastProcessedAt = time.Now()
+
 		return true
 	}
 	return false
+}
+
+func sendEmail() {
+
+	fmt.Println("Sending Email......")
+
 }
 
 func timeSlotInLocation(currentServerTime time.Time, schedule entity.SubscriptionSchedule) common.TimeSlot {

@@ -68,7 +68,7 @@ func SendNewsletter() {
 		if subscription.Confirmed {
 			time := time.Now()
 			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
-			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites, subscription.Topics)
+			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites)
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 			fmt.Printf("Subscription for %v\n", subscription.User.Email)
 			fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)

@@ -59,6 +59,7 @@ type Article struct {
 	Language    string   `json:"language"`
 	Country     []string `json:"country"`
 	Category    []string `json:"category"`
+	SourceUrl   string   `json:"source_url"`
 }
 
 type NewsdataApiResponse struct {

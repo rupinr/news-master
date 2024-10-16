@@ -54,15 +54,15 @@ func CreateSite(siteData dto.Site) {
 
 func CreateResult(result dto.Article) {
 	article := entity.Article{
-		Title:          result.Title,
-		Link:           result.Link,
-		Description:    result.Description,
-		Content:        result.Content,
-		ImageURL:       result.ImageURL,
-		Language:       result.Language,
-		Country:        pq.StringArray(result.Country),
-		Category:       pq.StringArray(result.Category),
-		DetectedTopics: nil,
+		Title:       result.Title,
+		Link:        result.Link,
+		Description: result.Description,
+		Content:     result.Content,
+		ImageURL:    result.ImageURL,
+		Language:    result.Language,
+		Country:     pq.StringArray(result.Country),
+		Category:    pq.StringArray(result.Category),
+		Site:        result.SourceUrl,
 	}
 	db().Create(&article)
 }
@@ -137,9 +137,9 @@ func SetLastProcessedAt(subscriptionId uint) {
 	db().Save(&sub)
 }
 
-func GetAllNewsFromDate(fromDate time.Time) []entity.Article {
+func GetArticlesFrom(fromDate time.Time, sites []string) []entity.Article {
 	var articles []entity.Article
-	db().Where("created_at > ?", fromDate).Find(&articles)
+	db().Where("created_at > ?", fromDate).Where("site IN ?", sites).Find(&articles)
 	return articles
 
 }

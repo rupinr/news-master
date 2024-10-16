@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"news-master/cmd/process"
 	"news-master/datamodels/dto"
@@ -15,12 +16,12 @@ import (
 )
 
 func FetchNewsTask() {
-	fmt.Println("-----running FetchNewsTask")
 	sites := repository.GetActiveSites()
-	fmt.Printf("Sites: %v", sites)
+	if len(sites) == 0 {
+		slog.Warn("No active sites")
+	}
 
 	for _, site := range sites {
-		//TODO add logs, when there is no data..
 
 		resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", os.Getenv("NEWS_DATA_API_URL"), os.Getenv("NEWS_DATA_API_KEY"), site.Url))
 		fmt.Printf("Site: %v", site)
@@ -56,13 +57,18 @@ func FetchNewsTask() {
 }
 
 func SendNewsletter() {
-	for _, subscription := range repository.GetAllSubscriptions() {
+	subscriptions := repository.GetAllSubscriptions()
+
+	if len(subscriptions) == 0 {
+		slog.Warn("No confirmed subscrriptions exist")
+	}
+	for _, subscription := range subscriptions {
 
 		//TODO add logs, when there is no data..
 		if subscription.Confirmed {
 			time := time.Now()
 			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
-			articles := repository.GetAllNewsFromDate(subscription.LastProcessedAt)
+			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites, subscription.Topics)
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 			fmt.Printf("Subscription for %v\n", subscription.User.Email)
 			fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)

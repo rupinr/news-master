@@ -8,7 +8,9 @@ import (
 	"news-master/repository"
 	"news-master/service"
 	"news-master/startup"
+	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
@@ -29,9 +31,14 @@ func (err Error) Error() string {
 
 func main() {
 	startup.Init()
-
 	r := gin.Default()
 
+	config := cors.New(cors.Config{
+		AllowOrigins: []string{os.Getenv("ALLOW_ORIGIN")},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+	})
+
+	r.Use(config)
 	r.POST("/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var topic dto.Topic
 		if c.ShouldBindJSON(&topic) == nil {

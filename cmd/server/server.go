@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"news-master/auth"
 	"news-master/datamodels/dto"
@@ -36,6 +37,7 @@ func main() {
 	config := cors.New(cors.Config{
 		AllowOrigins: []string{os.Getenv("ALLOW_ORIGIN")},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders: []string{"Authorization", "Content-Type"},
 	})
 
 	r.Use(config)
@@ -70,6 +72,16 @@ func main() {
 		}
 	})
 
+	r.GET("/sites", func(c *gin.Context) {
+		sites := repository.GetActiveSites()
+		var siteData []dto.Site
+		for _, site := range sites {
+			siteData = append(siteData, dto.Site{Url: site.Url})
+		}
+		jsonData, _ := json.Marshal(siteData)
+		c.Data(http.StatusOK, "application/json", jsonData)
+	})
+
 	r.POST("/user", func(c *gin.Context) {
 		var user dto.User
 		if c.ShouldBindJSON(&user) == nil {
@@ -84,7 +96,10 @@ func main() {
 
 	r.POST("/subscribe", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var subscriptionData dto.Subscription
-		if c.ShouldBindJSON(&subscriptionData) == nil {
+		err := c.ShouldBindJSON(&subscriptionData)
+
+		fmt.Println(err)
+		if err == nil {
 			cUser := auth.User(c)
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
@@ -105,9 +120,9 @@ func main() {
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
 				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot}
 			s := dto.Subscription{
-				Topics:                   pq.StringArray(createdSub.Topics),
 				Sites:                    pq.StringArray(createdSub.Sites),
 				SubscriptionScheduleData: subData,
+				Confirmed:                sub.Confirmed,
 			}
 
 			jsonData, _ := json.Marshal(s)
@@ -127,8 +142,7 @@ func main() {
 
 			if err == nil {
 				subData := dto.Subscription{
-					Topics: sub.Topics,
-					Sites:  sub.Sites,
+					Sites: sub.Sites,
 					SubscriptionScheduleData: dto.SubscriptionSchedule{
 						DailyFrequency: dto.DailyFrequency{
 							Monday:    sub.SubscriptionSchedule.Monday,

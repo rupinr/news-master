@@ -168,7 +168,6 @@ func CreateSubscription(subscriptionData dto.Subscription, user entity.User, sub
 		UserID: user.ID,
 	}
 	values := entity.Subscription{
-		Topics:                 pq.StringArray(subscriptionData.Topics),
 		Sites:                  pq.StringArray(subscriptionData.Sites),
 		SubscriptionScheduleID: subscriptionSchedule.ID,
 		Confirmed:              true,

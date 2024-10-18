@@ -18,6 +18,9 @@ type TopicUpdate struct {
 type Site struct {
 	Url string `json:"url" binding:"required"`
 }
+type Sites struct {
+	Sites []Site `json:"sites"`
+}
 
 type User struct {
 	Email string `json:"email" binding:"required"`
@@ -25,7 +28,6 @@ type User struct {
 
 type Subscription struct {
 	Confirmed                bool                 `json:"confirmed"`
-	Topics                   pq.StringArray       `json:"topics" binding:"required"`
 	Sites                    pq.StringArray       `json:"sites" binding:"required"`
 	SubscriptionScheduleData SubscriptionSchedule `json:"subscriptionSchedule" binding:"required"`
 }
@@ -40,7 +42,7 @@ type DailyFrequency struct {
 	Wednesday bool `json:"wednesday" binding:"required"`
 	Thursday  bool `json:"thursday" binding:"required"`
 	Friday    bool `json:"friday" binding:"required"`
-	Saturday  bool `json:"staturday" binding:"required"`
+	Saturday  bool `json:"saturday" binding:"required"`
 	Sunday    bool `json:"sunday" binding:"required"`
 }
 

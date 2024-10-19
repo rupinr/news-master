@@ -142,7 +142,8 @@ func main() {
 
 			if err == nil {
 				subData := dto.Subscription{
-					Sites: sub.Sites,
+					Sites:     sub.Sites,
+					Confirmed: sub.Confirmed,
 					SubscriptionScheduleData: dto.SubscriptionSchedule{
 						DailyFrequency: dto.DailyFrequency{
 							Monday:    sub.SubscriptionSchedule.Monday,

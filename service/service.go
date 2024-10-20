@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"news-master/auth"
 	"news-master/datamodels/common"
 	"news-master/datamodels/dto"
@@ -35,7 +36,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 		)
 		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID)
 
-		go email.SendEmail(createdUser.Email, token, "activate your email")
+		go email.SendEmail(createdUser.Email, fmt.Sprintf("http://localhost:5173/preferences?authToken=%v", token), "activate your email")
 		return createdUser, nil
 	} else {
 		return createdUser, errors.New("max Login attempt reached")

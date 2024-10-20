@@ -104,11 +104,13 @@ func main() {
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
 
-			fmt.Println(subscriptionData.SubscriptionScheduleData)
+			fmt.Printf("Data submieted %v\n", subscriptionData.SubscriptionScheduleData)
 
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 
-			sub := service.FirstOrCreateSubscription(subscriptionData, user, schedule)
+			fmt.Printf("schedule from subcribe %v\n", schedule)
+
+			sub := repository.CreateSubscription(user, schedule.ID)
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
 
 			subData := dto.SubscriptionSchedule{DailyFrequency: dto.DailyFrequency{

@@ -157,20 +157,25 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 		TimeZone:  subscriptionScheduleData.TimeZone,
 	}
 
-	fmt.Printf("Schedule %v\n", subscriptionScheduleDb)
+	fmt.Printf("Searching Schedule %v\n", subscriptionScheduleDb)
 	var subscriptionSchedule entity.SubscriptionSchedule
-	db().Where(subscriptionScheduleDb).FirstOrCreate(&subscriptionSchedule, subscriptionScheduleDb)
+
+	fmt.Printf("Before creating %v\n", subscriptionSchedule)
+
+	db().FirstOrCreate(&subscriptionSchedule, subscriptionScheduleDb)
+	fmt.Printf("After creating %v\n", subscriptionSchedule)
+
 	return subscriptionSchedule
 }
 
-func CreateSubscription(subscriptionData dto.Subscription, user entity.User, subscriptionSchedule entity.SubscriptionSchedule) entity.Subscription {
+func CreateSubscription(user entity.User, subscriptionScheduleID uint) entity.Subscription {
 	attrs := entity.Subscription{
 		UserID: user.ID,
 	}
 	values := entity.Subscription{
-		Sites:                  pq.StringArray(subscriptionData.Sites),
-		SubscriptionScheduleID: subscriptionSchedule.ID,
-		Confirmed:              true,
+		Sites:                  pq.StringArray{},
+		SubscriptionScheduleID: subscriptionScheduleID,
+		Confirmed:              false,
 	}
 	var subscription entity.Subscription
 	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)

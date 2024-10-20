@@ -13,7 +13,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 )
 
 type Subscription struct {
@@ -104,13 +103,14 @@ func main() {
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
 
-			fmt.Printf("Data submieted %v\n", subscriptionData.SubscriptionScheduleData.DailyFrequency.Friday)
+			fmt.Printf("Sitesssss %v\n", subscriptionData.Sites)
 
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 
 			fmt.Printf("schedule from subcribe %v\n", schedule)
 
-			sub := repository.CreateSubscription(user, schedule.ID)
+			sub := repository.CreateSubscription(user, subscriptionData.Sites, schedule.ID)
+
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
 
 			subData := dto.SubscriptionSchedule{DailyFrequency: dto.DailyFrequency{
@@ -123,9 +123,11 @@ func main() {
 				Sunday:    &createdSub.SubscriptionSchedule.Sunday,
 			},
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
-				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot}
+				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot,
+			}
+
 			s := dto.Subscription{
-				Sites:                    pq.StringArray(subscriptionData.Sites),
+				Sites:                    sub.Sites,
 				SubscriptionScheduleData: subData,
 				Confirmed:                subscriptionData.Confirmed,
 			}
@@ -144,6 +146,8 @@ func main() {
 			c.JSON(404, gin.H{"error": "Invalid request"})
 		} else {
 			sub, err := repository.GetSubscriptionByEmail(email)
+
+			fmt.Printf("sub %v\n", sub)
 
 			if err == nil {
 				subData := dto.Subscription{

@@ -2,8 +2,6 @@ package dto
 
 import (
 	"news-master/datamodels/common"
-
-	"github.com/lib/pq"
 )
 
 type Topic struct {
@@ -28,7 +26,7 @@ type User struct {
 
 type Subscription struct {
 	Confirmed                bool                 `json:"confirmed"`
-	Sites                    pq.StringArray       `json:"sites" binding:"required"`
+	Sites                    []string             `json:"sites" binding:"required"`
 	SubscriptionScheduleData SubscriptionSchedule `json:"subscriptionSchedule" binding:"required"`
 }
 

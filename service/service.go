@@ -33,7 +33,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 				TimeSlot: common.Morning,
 			},
 		)
-		repository.CreateSubscription(createdUser, subscriptionSchedule.ID)
+		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID)
 
 		go email.SendEmail(createdUser.Email, token, "activate your email")
 		return createdUser, nil

@@ -182,12 +182,12 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 	return subscriptionSchedule
 }
 
-func CreateSubscription(user entity.User, subscriptionScheduleID uint) entity.Subscription {
+func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID uint) entity.Subscription {
 	attrs := entity.Subscription{
 		UserID: user.ID,
 	}
 	values := entity.Subscription{
-		Sites:                  pq.StringArray{},
+		Sites:                  pq.StringArray(sites),
 		SubscriptionScheduleID: subscriptionScheduleID,
 		Confirmed:              false,
 	}

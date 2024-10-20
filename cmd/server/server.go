@@ -125,9 +125,9 @@ func main() {
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
 				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot}
 			s := dto.Subscription{
-				Sites:                    pq.StringArray(createdSub.Sites),
+				Sites:                    pq.StringArray(subscriptionData.Sites),
 				SubscriptionScheduleData: subData,
-				Confirmed:                sub.Confirmed,
+				Confirmed:                subscriptionData.Confirmed,
 			}
 
 			jsonData, _ := json.Marshal(s)

@@ -104,7 +104,7 @@ func main() {
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
 
-			fmt.Printf("Data submieted %v\n", subscriptionData.SubscriptionScheduleData)
+			fmt.Printf("Data submieted %v\n", subscriptionData.SubscriptionScheduleData.DailyFrequency.Friday)
 
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 

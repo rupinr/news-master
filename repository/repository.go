@@ -145,6 +145,7 @@ func GetArticlesFrom(fromDate time.Time, sites []string) []entity.Article {
 }
 
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {
+
 	subscriptionScheduleDb := entity.SubscriptionSchedule{
 		Monday:    *subscriptionScheduleData.DailyFrequency.Monday,
 		Tuesday:   *subscriptionScheduleData.DailyFrequency.Tuesday,
@@ -157,13 +158,26 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 		TimeZone:  subscriptionScheduleData.TimeZone,
 	}
 
-	fmt.Printf("Searching Schedule %v\n", subscriptionScheduleDb)
+	// Map to hold conditions
+	conditions := map[string]interface{}{
+		"monday":    subscriptionScheduleDb.Monday,
+		"tuesday":   subscriptionScheduleDb.Tuesday,
+		"wednesday": subscriptionScheduleDb.Wednesday,
+		"thursday":  subscriptionScheduleDb.Thursday,
+		"friday":    subscriptionScheduleDb.Friday,
+		"saturday":  subscriptionScheduleDb.Saturday,
+		"sunday":    subscriptionScheduleDb.Sunday,
+		"time_slot": subscriptionScheduleDb.TimeSlot,
+		"time_zone": subscriptionScheduleDb.TimeZone,
+	}
+
 	var subscriptionSchedule entity.SubscriptionSchedule
 
-	fmt.Printf("Before creating %v\n", subscriptionSchedule)
-
-	db().FirstOrCreate(&subscriptionSchedule, subscriptionScheduleDb)
-	fmt.Printf("After creating %v\n", subscriptionSchedule)
+	if err := db().Where(conditions).FirstOrCreate(&subscriptionSchedule, subscriptionScheduleDb).Error; err != nil {
+		fmt.Println("Error creating or finding record:", err)
+	} else {
+		fmt.Printf("Record found or created: %+v\n", subscriptionSchedule)
+	}
 
 	return subscriptionSchedule
 }

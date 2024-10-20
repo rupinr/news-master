@@ -104,18 +104,21 @@ func main() {
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
 
+			fmt.Println(subscriptionData.SubscriptionScheduleData)
+
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 
 			sub := service.FirstOrCreateSubscription(subscriptionData, user, schedule)
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
+
 			subData := dto.SubscriptionSchedule{DailyFrequency: dto.DailyFrequency{
-				Monday:    createdSub.SubscriptionSchedule.Monday,
-				Tuesday:   createdSub.SubscriptionSchedule.Tuesday,
-				Wednesday: createdSub.SubscriptionSchedule.Wednesday,
-				Thursday:  createdSub.SubscriptionSchedule.Thursday,
-				Friday:    createdSub.SubscriptionSchedule.Friday,
-				Saturday:  createdSub.SubscriptionSchedule.Saturday,
-				Sunday:    createdSub.SubscriptionSchedule.Sunday,
+				Monday:    &createdSub.SubscriptionSchedule.Monday,
+				Tuesday:   &createdSub.SubscriptionSchedule.Tuesday,
+				Wednesday: &createdSub.SubscriptionSchedule.Wednesday,
+				Thursday:  &createdSub.SubscriptionSchedule.Thursday,
+				Friday:    &createdSub.SubscriptionSchedule.Friday,
+				Saturday:  &createdSub.SubscriptionSchedule.Saturday,
+				Sunday:    &createdSub.SubscriptionSchedule.Sunday,
 			},
 				TimeZone: createdSub.SubscriptionSchedule.TimeZone,
 				TimeSlot: createdSub.SubscriptionSchedule.TimeSlot}
@@ -146,13 +149,13 @@ func main() {
 					Confirmed: sub.Confirmed,
 					SubscriptionScheduleData: dto.SubscriptionSchedule{
 						DailyFrequency: dto.DailyFrequency{
-							Monday:    sub.SubscriptionSchedule.Monday,
-							Tuesday:   sub.SubscriptionSchedule.Tuesday,
-							Wednesday: sub.SubscriptionSchedule.Wednesday,
-							Thursday:  sub.SubscriptionSchedule.Thursday,
-							Friday:    sub.SubscriptionSchedule.Friday,
-							Saturday:  sub.SubscriptionSchedule.Saturday,
-							Sunday:    sub.SubscriptionSchedule.Sunday,
+							Monday:    &sub.SubscriptionSchedule.Monday,
+							Tuesday:   &sub.SubscriptionSchedule.Tuesday,
+							Wednesday: &sub.SubscriptionSchedule.Wednesday,
+							Thursday:  &sub.SubscriptionSchedule.Thursday,
+							Friday:    &sub.SubscriptionSchedule.Friday,
+							Saturday:  &sub.SubscriptionSchedule.Saturday,
+							Sunday:    &sub.SubscriptionSchedule.Sunday,
 						},
 						TimeSlot: sub.SubscriptionSchedule.TimeSlot,
 						TimeZone: sub.SubscriptionSchedule.TimeZone,

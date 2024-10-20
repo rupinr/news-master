@@ -146,13 +146,13 @@ func GetArticlesFrom(fromDate time.Time, sites []string) []entity.Article {
 
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {
 	subscriptionScheduleDb := entity.SubscriptionSchedule{
-		Monday:    subscriptionScheduleData.DailyFrequency.Monday,
-		Tuesday:   subscriptionScheduleData.DailyFrequency.Tuesday,
-		Wednesday: subscriptionScheduleData.DailyFrequency.Wednesday,
-		Thursday:  subscriptionScheduleData.DailyFrequency.Thursday,
-		Friday:    subscriptionScheduleData.DailyFrequency.Friday,
-		Saturday:  subscriptionScheduleData.DailyFrequency.Saturday,
-		Sunday:    subscriptionScheduleData.DailyFrequency.Sunday,
+		Monday:    *subscriptionScheduleData.DailyFrequency.Monday,
+		Tuesday:   *subscriptionScheduleData.DailyFrequency.Tuesday,
+		Wednesday: *subscriptionScheduleData.DailyFrequency.Wednesday,
+		Thursday:  *subscriptionScheduleData.DailyFrequency.Thursday,
+		Friday:    *subscriptionScheduleData.DailyFrequency.Friday,
+		Saturday:  *subscriptionScheduleData.DailyFrequency.Saturday,
+		Sunday:    *subscriptionScheduleData.DailyFrequency.Sunday,
 		TimeSlot:  subscriptionScheduleData.TimeSlot,
 		TimeZone:  subscriptionScheduleData.TimeZone,
 	}

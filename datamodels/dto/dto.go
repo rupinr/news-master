@@ -37,13 +37,13 @@ type SubscriptionConfirmation struct {
 }
 
 type DailyFrequency struct {
-	Monday    bool `json:"monday" binding:"required"`
-	Tuesday   bool `json:"tuesday" binding:"required"`
-	Wednesday bool `json:"wednesday" binding:"required"`
-	Thursday  bool `json:"thursday" binding:"required"`
-	Friday    bool `json:"friday" binding:"required"`
-	Saturday  bool `json:"saturday" binding:"required"`
-	Sunday    bool `json:"sunday" binding:"required"`
+	Monday    *bool `json:"monday" binding:"required"`
+	Tuesday   *bool `json:"tuesday" binding:"required"`
+	Wednesday *bool `json:"wednesday" binding:"required"`
+	Thursday  *bool `json:"thursday" binding:"required"`
+	Friday    *bool `json:"friday" binding:"required"`
+	Saturday  *bool `json:"saturday" binding:"required"`
+	Sunday    *bool `json:"sunday" binding:"required"`
 }
 
 type SubscriptionSchedule struct {

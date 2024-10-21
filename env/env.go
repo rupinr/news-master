@@ -1,7 +1,7 @@
 package env
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/joho/godotenv"
 )
@@ -9,7 +9,6 @@ import (
 func LoadEnv() {
 	err := godotenv.Load(".env.development")
 	if err != nil {
-		log.Fatalf(err.Error())
-		log.Fatalf("Error loading .env file")
+		slog.Info("Error loading .env.development file, Running in Prod mode")
 	}
 }

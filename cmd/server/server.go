@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"news-master/auth"
+	custom "news-master/custom_validators"
 	"news-master/datamodels/dto"
 	"news-master/repository"
 	"news-master/service"
@@ -32,6 +33,11 @@ func (err Error) Error() string {
 func main() {
 	startup.Init()
 	r := gin.Default()
+	validate, e := custom.InitValidator()
+	if e != nil {
+		fmt.Printf("Error initializing validator: %v\n", e)
+		return
+	}
 
 	config := cors.New(cors.Config{
 		AllowOrigins: []string{os.Getenv("ALLOW_ORIGIN")},
@@ -84,6 +90,10 @@ func main() {
 	r.POST("/user", func(c *gin.Context) {
 		var user dto.User
 		if c.ShouldBindJSON(&user) == nil {
+			if err := validate.Struct(user); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Email"})
+				return
+			}
 			_, err := service.CreateUserAndTriggerLoginEmail(user)
 			if err != nil {
 				c.JSON(http.StatusTooManyRequests, gin.H{"error": "Max attempt reached."})

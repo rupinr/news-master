@@ -21,7 +21,7 @@ type Sites struct {
 }
 
 type User struct {
-	Email string `json:"email" binding:"required"`
+	Email string `json:"email" validate:"required,emailValidator"`
 }
 
 type Subscription struct {

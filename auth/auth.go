@@ -3,7 +3,9 @@ package auth
 import (
 	"crypto/rsa"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"news-master/app"
 	"os"
 	"time"
 
@@ -39,7 +41,7 @@ var (
 )
 
 func LoadKeys() {
-	fmt.Printf("Initing Keys.....")
+	slog.Info("Initing Keys")
 	privateKey, errPvtKey = loadPrivateKey()
 	publicKey, errPubKey = loadPublicKey()
 	if errPubKey != nil || errPvtKey != nil {
@@ -49,7 +51,7 @@ func LoadKeys() {
 }
 
 func loadPrivateKey() (*rsa.PrivateKey, error) {
-	privateKeyData, err := os.ReadFile(os.Getenv("PRIVATE_KEY_PATH"))
+	privateKeyData, err := os.ReadFile(app.Config.PrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 }
 
 func loadPublicKey() (*rsa.PublicKey, error) {
-	publicKeyData, err := os.ReadFile(os.Getenv("PUBLIC_KEY_PATH"))
+	publicKeyData, err := os.ReadFile(app.Config.PublicKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +68,7 @@ func loadPublicKey() (*rsa.PublicKey, error) {
 
 func (token *Token) validateAdminToken() *DecodedUser {
 	user := defaultDecodedUser()
-	if token.Value == os.Getenv("ADMIN_TOKEN") {
+	if token.Value == app.Config.AdminToken {
 		user.Admin = true
 		user.Valid = true
 	}

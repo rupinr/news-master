@@ -6,10 +6,10 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"news-master/app"
 	"news-master/cmd/process"
 	"news-master/datamodels/dto"
 	"news-master/repository"
-	"os"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -23,7 +23,7 @@ func FetchNewsTask() {
 
 	for _, site := range sites {
 
-		resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", os.Getenv("NEWS_DATA_API_URL"), os.Getenv("NEWS_DATA_API_KEY"), site.Url))
+		resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", app.Config.NewsDataApiUrl, app.Config.NewsDataApiKey, site.Url))
 		fmt.Printf("Site: %v", site)
 
 		if err != nil {

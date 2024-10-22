@@ -1,8 +1,8 @@
 package startup
 
 import (
+	"news-master/app"
 	"news-master/auth"
-	"news-master/env"
 	"news-master/repository"
 	"sync"
 )
@@ -14,7 +14,7 @@ func Init() {
 }
 
 func _init() {
-	env.LoadEnv()
+	app.Load()
 	auth.LoadKeys()
 	repository.Migrate()
 }

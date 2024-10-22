@@ -2,9 +2,9 @@ package repository
 
 import (
 	"fmt"
+	"news-master/app"
 	"news-master/datamodels/dto"
 	"news-master/datamodels/entity"
-	"os"
 	"sync"
 	"time"
 
@@ -227,12 +227,12 @@ var (
 
 func db() *gorm.DB {
 	once.Do(func() {
-		dbUser := os.Getenv("DB_USER")
-		dbPassword := os.Getenv("DB_PASSWORD")
-		dbHost := os.Getenv("DB_HOST")
-		dbPort := os.Getenv("DB_PORT")
-		dbName := os.Getenv("DB_NAME")
-		dbSslMode := os.Getenv("DB_SSL_MODE")
+		dbUser := app.Config.DbUser
+		dbPassword := app.Config.DbPassword
+		dbHost := app.Config.DbHost
+		dbPort := app.Config.DbPort
+		dbName := app.Config.DbName
+		dbSslMode := app.Config.DbSslMode
 		cStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPassword, dbName, dbPort, dbSslMode)
 		dataBase, err = gorm.Open(postgres.Open(cStr), &gorm.Config{Logger: logger.Default.LogMode(getLogMode())})
 		if err != nil {
@@ -247,7 +247,7 @@ func db() *gorm.DB {
 }
 
 func getLogMode() logger.LogLevel {
-	switch os.Getenv("GORM_LOG_MODE") {
+	switch app.Config.GormLogMode {
 	case "error":
 		return logger.Error
 	case "info":

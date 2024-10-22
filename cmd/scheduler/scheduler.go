@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"news-master/app"
 	"news-master/startup"
 	"news-master/tasks"
 	"os"
@@ -18,18 +19,14 @@ func main() {
 		panic("Unable to start scheduler....")
 	}
 	_, subscriptionJoberr := scheduler.NewJob(
-		gocron.CronJob(
-			os.Getenv("SUBSCRIPTION_MAIL_CRON"), true,
-		),
+		gocron.CronJob(app.Config.SubscriptionMailCron, true),
 		gocron.NewTask(
 			tasks.SendNewsletter,
 		),
 	)
 
 	_, newsFetchJobErr := scheduler.NewJob(
-		gocron.CronJob(
-			os.Getenv("NEWS_FETCH_CRON"), true,
-		),
+		gocron.CronJob(app.Config.NewsFetchCron, true),
 
 		gocron.NewTask(tasks.FetchNewsTask),
 	)

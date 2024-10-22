@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"news-master/app"
 	"news-master/auth"
 	custom "news-master/custom_validators"
 	"news-master/datamodels/dto"
 	"news-master/repository"
 	"news-master/service"
 	"news-master/startup"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	config := cors.New(cors.Config{
-		AllowOrigins: []string{os.Getenv("ALLOW_ORIGIN")},
+		AllowOrigins: []string{app.Config.AllowOrigin},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders: []string{"Authorization", "Content-Type"},
 	})

@@ -36,6 +36,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 			},
 		)
 		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID)
+
 		emailData := email.EmailData{ActivationLink: helper.PreAuthLink(token)}
 		htmlEmail, htmlErr := email.GenerateHTML(emailData)
 		textEmail, txtErr := email.GenerateText(emailData)
@@ -47,7 +48,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 				textEmail,
 			)
 		} else {
-			slog.Error("Error in email template", htmlErr, txtErr)
+			slog.Error("Error in email template", htmlErr.Error(), txtErr.Error())
 		}
 		return createdUser, nil
 	} else {

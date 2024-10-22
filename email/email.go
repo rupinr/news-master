@@ -1,7 +1,6 @@
 package email
 
 import (
-	"fmt"
 	"log/slog"
 	"news-master/app"
 	"sync"
@@ -10,11 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 )
-
-func SendEmail(to string, body string, subject string) {
-
-	fmt.Printf("Sending email to %v with token %v", to, body)
-}
 
 var once sync.Once
 var svc *ses.SES
@@ -34,7 +28,7 @@ const (
 	CharSet = "UTF-8"
 )
 
-func SendSesEmail(recipient string, subject string, htmlBody string, textBody string) {
+func SendEmail(recipient string, subject string, htmlBody string, textBody string) {
 	once.Do(setupSession)
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{

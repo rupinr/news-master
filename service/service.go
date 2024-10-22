@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	"log/slog"
 	"news-master/app"
 	"news-master/auth"
 	"news-master/datamodels/common"
@@ -36,12 +36,19 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 			},
 		)
 		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID)
-		go email.SendSesEmail(
-			createdUser.Email,
-			"Activate Your QuickBrew Subscription Now!",
-			"",
-			fmt.Sprintf("If the above link doesn't work, please copy and paste the following URL into your browser: %s", helper.PreAuthLink(token)),
-		)
+		emailData := email.EmailData{ActivationLink: helper.PreAuthLink(token)}
+		htmlEmail, htmlErr := email.GenerateHTML(emailData)
+		textEmail, txtErr := email.GenerateText(emailData)
+		if htmlErr == nil && txtErr == nil {
+			go email.SendEmail(
+				createdUser.Email,
+				"Activate Your QuickBrew Subscription Now!",
+				htmlEmail,
+				textEmail,
+			)
+		} else {
+			slog.Error("Error in email template", htmlErr, txtErr)
+		}
 		return createdUser, nil
 	} else {
 		return createdUser, errors.New("max Login attempt reached")

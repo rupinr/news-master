@@ -56,3 +56,10 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 	}
 
 }
+
+func CreateFeedBackAndTriggerAdminEmail(feedback dto.Feedback) {
+	createdFeedback, err := repository.CreateFeedBack(feedback)
+	if err == nil {
+		go email.SendEmail(app.Config.AdminEmail, "You've got feedback", createdFeedback.Content, createdFeedback.Content)
+	}
+}

@@ -14,7 +14,8 @@ type TopicUpdate struct {
 }
 
 type Site struct {
-	Url string `json:"url" binding:"required"`
+	Url  string `json:"url" binding:"required"`
+	Name string `json:"name" binding:"required"`
 }
 type Sites struct {
 	Sites []Site `json:"sites"`
@@ -48,6 +49,10 @@ type SubscriptionSchedule struct {
 	DailyFrequency DailyFrequency  `json:"dailyFrequency" binding:"required"`
 	TimeSlot       common.TimeSlot `json:"timeSlot" binding:"required"`
 	TimeZone       string          `json:"timezone" binding:"required"`
+}
+
+type Feedback struct {
+	Content string `json:"content" binding:"required"`
 }
 
 type Article struct {

@@ -49,7 +49,9 @@ func UpdateTopic(name string, visibility bool) error {
 
 func CreateSite(siteData dto.Site) {
 	var siteDb entity.Site
-	db().Where(entity.Site{Url: siteData.Url}).FirstOrCreate(&siteDb)
+	db().Where(entity.Site{Url: siteData.Url}).Assign(entity.Site{
+		Name: siteData.Name,
+	}).FirstOrCreate(&siteDb)
 }
 
 func CreateResult(result dto.Article) {
@@ -215,8 +217,15 @@ func UpdateSubscriptionConfirmation(id uint, confirmed bool) error {
 
 }
 
+func CreateFeedBack(feedback dto.Feedback) (*entity.Feedback, error) {
+	var f entity.Feedback
+	f.Content = feedback.Content
+	err := db().Create(&f).Error
+	return &f, err
+}
+
 func Migrate() {
-	db().AutoMigrate(&entity.Topic{}, &entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{}, &entity.Article{})
+	db().AutoMigrate(&entity.Topic{}, &entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{}, &entity.Article{}, &entity.Feedback{})
 }
 
 var (

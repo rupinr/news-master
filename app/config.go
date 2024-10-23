@@ -37,6 +37,8 @@ type EnvVars struct {
 	GinMode              string `json:"GIN_MODE"`
 	EmailSender          string `json:"EMAIL_SENDER"`
 	SiteUrl              string `json:"SITE_URL"`
+	EmailSimulatorMode   string `json:"EMAIL_SIMULATOR_MODE"`
+	AdminEmail           string `json:"ADMIN_EMAIL"`
 }
 
 var Config EnvVars

@@ -1,6 +1,7 @@
 package email
 
 import (
+	"fmt"
 	"log/slog"
 	"news-master/app"
 	"sync"
@@ -28,7 +29,13 @@ const (
 	CharSet = "UTF-8"
 )
 
-func SendEmail(recipient string, subject string, htmlBody string, textBody string) {
+func sendSimulationEmail(recipient string, subject string, htmlBody string, textBody string) {
+
+	slog.Info(fmt.Sprintf("!!!Simulation!!!! Email sent to %v with text %v , html %v and subject %v", recipient, textBody, htmlBody, subject))
+}
+
+func sendSesEmail(recipient string, subject string, htmlBody string, textBody string) {
+
 	once.Do(setupSession)
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
@@ -64,3 +71,22 @@ func SendEmail(recipient string, subject string, htmlBody string, textBody strin
 	}
 	slog.Debug("Email Sent to address: " + recipient)
 }
+
+func SendEmail(recipient string, subject string, htmlBody string, textBody string) {
+
+	fmt.Println("env" + app.Config.EmailSimulatorMode)
+	fmt.Println("struc" + string(OFF))
+
+	if app.Config.EmailSimulatorMode == string(OFF) {
+		sendSesEmail(recipient, subject, htmlBody, textBody)
+	} else {
+		sendSimulationEmail(recipient, subject, htmlBody, textBody)
+	}
+}
+
+type EmailMode string
+
+const (
+	ON  EmailMode = "on"
+	OFF EmailMode = "off"
+)

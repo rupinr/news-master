@@ -81,7 +81,7 @@ func main() {
 		sites := repository.GetActiveSites()
 		var siteData []dto.Site
 		for _, site := range sites {
-			siteData = append(siteData, dto.Site{Url: site.Url})
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name})
 		}
 		jsonData, _ := json.Marshal(siteData)
 		c.Data(http.StatusOK, "application/json", jsonData)
@@ -184,6 +184,15 @@ func main() {
 			}
 		}
 
+	})
+
+	r.POST("/feedback", func(c *gin.Context) {
+		var feedback dto.Feedback
+		if c.ShouldBindJSON(&feedback) == nil {
+			service.CreateFeedBackAndTriggerAdminEmail(feedback)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		}
 	})
 	r.Run()
 }

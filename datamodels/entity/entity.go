@@ -16,6 +16,7 @@ type Topic struct {
 type Site struct {
 	gorm.Model
 	Url    string
+	Name   string
 	Active bool `gorm:"index:"`
 }
 type User struct {
@@ -23,6 +24,12 @@ type User struct {
 	Email             string `gorm:"uniqueIndex"`
 	LoginAttemptCount int
 }
+
+type Feedback struct {
+	gorm.Model
+	Content string
+}
+
 type Subscription struct {
 	gorm.Model
 	UserID                 uint `gorm:"uniqueIndex"`

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBrew Newsletter</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #F7F8FA;
+            color: #2E2E2E;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .entry {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .entry img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .entry h2 {
+            color: #3A7CA5;
+            margin-top: 0;
+        }
+
+        .entry a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {{range .Entries}}
+        <div class="entry">
+            <a href="{{.URL}}" target="_blank">
+                <h2>{{.Title}}</h2>
+                <img src="{{.ImageURL}}" alt="{{.Title}}">
+            </a>
+        </div>
+        {{end}}
+    </div>
+</body>
+
+</html>

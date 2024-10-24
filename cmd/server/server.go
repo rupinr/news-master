@@ -119,7 +119,7 @@ func main() {
 
 			fmt.Printf("schedule from subcribe %v\n", schedule)
 
-			sub := repository.CreateSubscription(user, subscriptionData.Sites, schedule.ID)
+			sub := repository.CreateSubscription(user, subscriptionData.Sites, schedule.ID, true)
 
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
 
@@ -139,7 +139,7 @@ func main() {
 			s := dto.Subscription{
 				Sites:                    sub.Sites,
 				SubscriptionScheduleData: subData,
-				Confirmed:                subscriptionData.Confirmed,
+				Confirmed:                true,
 			}
 
 			jsonData, _ := json.Marshal(s)
@@ -194,5 +194,16 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
 	})
+
+	r.POST("/cancel", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
+		email := auth.User(c).Email
+		if email == "" {
+			c.JSON(404, gin.H{"error": "Invalid request"})
+		} else {
+			sub, _ := repository.GetSubscriptionByEmail(email)
+			repository.CancelSubscription(&sub)
+		}
+	})
+
 	r.Run()
 }

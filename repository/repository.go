@@ -184,14 +184,14 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 	return subscriptionSchedule
 }
 
-func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID uint) entity.Subscription {
+func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID uint, isConfirmed bool) entity.Subscription {
 	attrs := entity.Subscription{
 		UserID: user.ID,
 	}
 	values := entity.Subscription{
 		Sites:                  pq.StringArray(sites),
 		SubscriptionScheduleID: subscriptionScheduleID,
-		Confirmed:              false,
+		Confirmed:              isConfirmed,
 	}
 	var subscription entity.Subscription
 	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)
@@ -222,6 +222,11 @@ func CreateFeedBack(feedback dto.Feedback) (*entity.Feedback, error) {
 	f.Content = feedback.Content
 	err := db().Create(&f).Error
 	return &f, err
+}
+
+func CancelSubscription(sub *entity.Subscription) {
+	sub.Confirmed = false
+	db().Save(&sub)
 }
 
 func Migrate() {

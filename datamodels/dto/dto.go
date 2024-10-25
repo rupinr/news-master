@@ -2,6 +2,7 @@ package dto
 
 import (
 	"news-master/datamodels/common"
+	"news-master/datamodels/entity"
 )
 
 type Topic struct {
@@ -20,6 +21,10 @@ type Site struct {
 }
 type Sites struct {
 	Sites []Site `json:"sites"`
+}
+
+type NewsletterData struct {
+	Articles []entity.Article
 }
 
 type User struct {

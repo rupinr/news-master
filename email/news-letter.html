@@ -48,9 +48,9 @@
 
 <body>
     <div class="container">
-        {{range .Entries}}
+        {{range .Articles}}
         <div class="entry">
-            <a href="{{.URL}}" target="_blank">
+            <a href="{{.Link}}" target="_blank">
                 <h2>{{.Title}}</h2>
                 <img src="{{.ImageURL}}" alt="{{.Title}}">
             </a>

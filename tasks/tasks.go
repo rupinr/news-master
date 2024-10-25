@@ -9,10 +9,9 @@ import (
 	"news-master/app"
 	"news-master/cmd/process"
 	"news-master/datamodels/dto"
+	"news-master/email"
 	"news-master/repository"
 	"time"
-
-	"golang.org/x/exp/rand"
 )
 
 func FetchNewsTask() {
@@ -70,11 +69,13 @@ func SendNewsletter() {
 			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
 			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites)
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
-			fmt.Printf("Subscription for %v\n", subscription.User.Email)
-			fmt.Printf("SubscriptionTopic for %v\n", subscription.Topics)
-			randomIndex := rand.Intn(len(articles))
 
-			fmt.Printf("Articles %v\n", articles[randomIndex].Title)
+			html, _ := email.GenerateNewsLetterHTML(dto.NewsletterData{Articles: articles})
+			email.SendEmail(
+				subscription.User.Email,
+				"Your daily newsletter",
+				html,
+				"")
 		}
 	}
 }

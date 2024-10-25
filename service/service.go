@@ -38,7 +38,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID, false)
 
 		emailData := email.EmailData{ActivationLink: helper.PreAuthLink(token)}
-		htmlEmail, htmlErr := email.GenerateHTML(emailData)
+		htmlEmail, htmlErr := email.GenerateRegistrationHTML(emailData)
 		textEmail, txtErr := email.GenerateText(emailData)
 		if htmlErr == nil && txtErr == nil {
 			go email.SendEmail(

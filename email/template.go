@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
+	"news-master/datamodels/dto"
 )
 
 type EmailData struct {
@@ -13,7 +14,10 @@ type EmailData struct {
 //go:embed registration.html
 var registrationTemplate embed.FS
 
-func GenerateHTML(emailData EmailData) (string, error) {
+//go:embed news-letter.html
+var newsLetterTemplate embed.FS
+
+func GenerateRegistrationHTML(emailData EmailData) (string, error) {
 	htmlTemplate, _ := registrationTemplate.ReadFile("registration.html")
 
 	t, err := template.New("email").Parse(string(htmlTemplate))
@@ -23,6 +27,22 @@ func GenerateHTML(emailData EmailData) (string, error) {
 
 	var htmlBody bytes.Buffer
 	if err = t.Execute(&htmlBody, emailData); err != nil {
+		return "", err
+	}
+
+	return htmlBody.String(), nil
+}
+
+func GenerateNewsLetterHTML(articles dto.NewsletterData) (string, error) {
+	htmlTemplate, _ := newsLetterTemplate.ReadFile("news-letter.html")
+
+	t, err := template.New("email").Parse(string(htmlTemplate))
+	if err != nil {
+		return "", err
+	}
+
+	var htmlBody bytes.Buffer
+	if err = t.Execute(&htmlBody, articles); err != nil {
 		return "", err
 	}
 

@@ -87,6 +87,25 @@ func main() {
 		c.Data(http.StatusOK, "application/json", jsonData)
 	})
 
+	r.GET("/sites/all", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+		sites := repository.GetAllSites()
+		var siteData []dto.Site
+		for _, site := range sites {
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
+		}
+		jsonData, _ := json.Marshal(siteData)
+		c.Data(http.StatusOK, "application/json", jsonData)
+	})
+
+	r.POST("/sites/update", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+		var sites []dto.Site
+		if c.ShouldBindJSON(&sites) == nil {
+			repository.UpdateSites(sites)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		}
+	})
+
 	r.POST("/user", func(c *gin.Context) {
 		var user dto.User
 		if c.ShouldBindJSON(&user) == nil {

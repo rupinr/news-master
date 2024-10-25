@@ -14,8 +14,9 @@ type TopicUpdate struct {
 }
 
 type Site struct {
-	Url  string `json:"url" binding:"required"`
-	Name string `json:"name" binding:"required"`
+	Url    string `json:"url" binding:"required"`
+	Name   string `json:"name" binding:"required"`
+	Active bool   `json:"active"`
 }
 type Sites struct {
 	Sites []Site `json:"sites"`

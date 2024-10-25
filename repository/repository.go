@@ -54,6 +54,21 @@ func CreateSite(siteData dto.Site) {
 	}).FirstOrCreate(&siteDb)
 }
 
+func UpdateSites(siteData []dto.Site) {
+	sites := make([]entity.Site, len(siteData))
+	for i, v := range siteData {
+		sites[i] = entity.Site{
+			Url: v.Url,
+		}
+	}
+	for _, v := range siteData {
+		db().Where(&sites).UpdateColumns(entity.Site{
+			Name:   v.Name,
+			Active: v.Active,
+		})
+	}
+}
+
 func CreateResult(result dto.Article) {
 	article := entity.Article{
 		Title:       result.Title,
@@ -72,6 +87,12 @@ func CreateResult(result dto.Article) {
 func GetActiveSites() []entity.Site {
 	var sites []entity.Site
 	db().Where(entity.Site{Active: true}).Find(&sites)
+	return sites
+}
+
+func GetAllSites() []entity.Site {
+	var sites []entity.Site
+	db().Find(&sites)
 	return sites
 }
 

@@ -146,13 +146,7 @@ func main() {
 			cUser := auth.User(c)
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
-
-			fmt.Printf("Sitesssss %v\n", subscriptionData.Sites)
-
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
-
-			fmt.Printf("schedule from subcribe %v\n", schedule)
-
 			sub := repository.CreateSubscription(user, subscriptionData.Sites, schedule.ID, true)
 
 			createdSub := repository.GetSubscriptionByID(int(sub.ID))
@@ -190,9 +184,6 @@ func main() {
 			c.JSON(404, gin.H{"error": "Invalid request"})
 		} else {
 			sub, err := repository.GetSubscriptionByEmail(email)
-
-			fmt.Printf("sub %v\n", sub)
-
 			if err == nil {
 				subData := dto.Subscription{
 					Sites:     sub.Sites,

@@ -24,7 +24,8 @@ type Sites struct {
 }
 
 type NewsletterData struct {
-	Articles []entity.Article
+	ManageSubscriptionLink string
+	Articles               []entity.Article
 }
 
 type User struct {

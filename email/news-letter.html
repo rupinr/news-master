@@ -22,6 +22,12 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        .header,
+        .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         .entry {
             margin-bottom: 20px;
             padding-bottom: 20px;
@@ -48,6 +54,10 @@
 
 <body>
     <div class="container">
+        <div class="header">
+            <h1>QuickBrew Newsletter</h1>
+            <p>Your daily dose of curated news</p>
+        </div>
         {{range .Articles}}
         <div class="entry">
             <a href="{{.Link}}" target="_blank">
@@ -56,6 +66,10 @@
             </a>
         </div>
         {{end}}
+        <div class="footer">
+            <p>© 2024 QuickBrewNews. All rights reserved.</p>
+            <p><a href="{{.ManageSubscriptionLink}}" target="_blank">Manage Subscription</a></p>
+        </div>
     </div>
 </body>
 

@@ -7,9 +7,11 @@ import (
 	"log/slog"
 	"net/http"
 	"news-master/app"
+	"news-master/auth"
 	"news-master/cmd/process"
 	"news-master/datamodels/dto"
 	"news-master/email"
+	"news-master/helper"
 	"news-master/repository"
 	"time"
 )
@@ -72,13 +74,20 @@ func SendNewsletter() {
 			//Fix, do not send, it procedded today....
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 
-			html, err := email.GenerateNewsLetterHTML(dto.NewsletterData{Articles: articles})
-			if err == nil {
+			token, tokenErr := auth.SubsriberToken(subscription.UserID, subscription.User.Email, 24)
+
+			html, err := email.GenerateNewsLetterHTML(dto.NewsletterData{
+				Articles:               articles,
+				ManageSubscriptionLink: helper.PreAuthLink(token)})
+
+			if err == nil && tokenErr == nil {
 				email.SendEmail(
 					subscription.User.Email,
 					"Your daily newsletter",
 					html,
 					"")
+			} else {
+				slog.Error("Error sending email", err.Error(), tokenErr.Error())
 			}
 		}
 	}

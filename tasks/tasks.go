@@ -70,12 +70,14 @@ func SendNewsletter() {
 			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites)
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 
-			html, _ := email.GenerateNewsLetterHTML(dto.NewsletterData{Articles: articles})
-			email.SendEmail(
-				subscription.User.Email,
-				"Your daily newsletter",
-				html,
-				"")
+			html, err := email.GenerateNewsLetterHTML(dto.NewsletterData{Articles: articles})
+			if err == nil {
+				email.SendEmail(
+					subscription.User.Email,
+					"Your daily newsletter",
+					html,
+					"")
+			}
 		}
 	}
 }

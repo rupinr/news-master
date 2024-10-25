@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -105,7 +106,9 @@ func CreateUser(userData dto.User) entity.User {
 
 func MarkUserDeleted(email string) {
 	userDb := entity.User{Email: email}
-	db().Delete(&userDb)
+	db().Where(userDb).UpdateColumns(entity.User{
+		Email: fmt.Sprintf("%v@deleted", uuid.New()),
+	})
 }
 
 func GetUser(userData dto.User) entity.User {

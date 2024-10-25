@@ -19,14 +19,14 @@ func main() {
 		panic("Unable to start scheduler....")
 	}
 	_, subscriptionJoberr := scheduler.NewJob(
-		gocron.CronJob(app.Config.SubscriptionMailCron, true),
+		gocron.CronJob(app.Config.SubscriptionMailCron, false),
 		gocron.NewTask(
 			tasks.SendNewsletter,
 		),
 	)
 
 	_, newsFetchJobErr := scheduler.NewJob(
-		gocron.CronJob(app.Config.NewsFetchCron, true),
+		gocron.CronJob(app.Config.NewsFetchCron, false),
 
 		gocron.NewTask(tasks.FetchNewsTask),
 	)

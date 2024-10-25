@@ -82,6 +82,11 @@ func CreateUser(userData dto.User) entity.User {
 	return user
 }
 
+func MarkUserDeleted(email string) {
+	userDb := entity.User{Email: email}
+	db().Delete(&userDb)
+}
+
 func GetUser(userData dto.User) entity.User {
 	userDb := entity.User{Email: userData.Email}
 	var user entity.User

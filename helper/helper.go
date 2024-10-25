@@ -6,5 +6,5 @@ import (
 )
 
 func PreAuthLink(token string) string {
-	return fmt.Sprintf("%v/preferences?authToken=%v", app.Config.SiteUrl, token)
+	return fmt.Sprintf("%v/#/preferences?authToken=%v", app.Config.SiteUrl, token)
 }

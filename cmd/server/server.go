@@ -202,6 +202,7 @@ func main() {
 		} else {
 			sub, _ := repository.GetSubscriptionByEmail(email)
 			repository.CancelSubscription(&sub)
+			repository.MarkUserDeleted(email)
 		}
 	})
 

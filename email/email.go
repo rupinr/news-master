@@ -73,10 +73,6 @@ func sendSesEmail(recipient string, subject string, htmlBody string, textBody st
 }
 
 func SendEmail(recipient string, subject string, htmlBody string, textBody string) {
-
-	fmt.Println("env" + app.Config.EmailSimulatorMode)
-	fmt.Println("struc" + string(OFF))
-
 	if app.Config.EmailSimulatorMode == string(OFF) {
 		sendSesEmail(recipient, subject, htmlBody, textBody)
 	} else {

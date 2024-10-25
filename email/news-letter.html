@@ -49,6 +49,12 @@
             text-decoration: none;
             color: inherit;
         }
+
+        .footer a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #3A7CA5;
+        }
     </style>
 </head>
 
@@ -67,8 +73,12 @@
         </div>
         {{end}}
         <div class="footer">
-            <p>© 2024 QuickBrewNews. All rights reserved.</p>
-            <p><a href="{{.ManageSubscriptionLink}}" target="_blank">Manage Subscription</a></p>
+            <p>Made with ❤️ by QuickBrewNews.</p>
+            <p>
+                <a href="{{.UnsubscribeLink}}" target="_blank">Unsubscribe</a>
+                <a href="{{.AboutLink}}" target="_blank">About</a>
+                <a href="{{.PrivacyLink}}" target="_blank">Privacy Policy</a>
+            </p>
         </div>
     </div>
 </body>

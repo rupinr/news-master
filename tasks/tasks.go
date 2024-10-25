@@ -78,7 +78,10 @@ func SendNewsletter() {
 
 			html, err := email.GenerateNewsLetterHTML(dto.NewsletterData{
 				Articles:               articles,
-				ManageSubscriptionLink: helper.PreAuthLink(token)})
+				ManageSubscriptionLink: helper.PreAuthLink(token),
+				AboutLink:              helper.AboutLinkLink(),
+				PrivacyLink:            helper.PrivacyLink(),
+			})
 
 			if err == nil && tokenErr == nil {
 				email.SendEmail(

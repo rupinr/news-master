@@ -146,6 +146,7 @@ func main() {
 			cUser := auth.User(c)
 
 			user := repository.GetUser(dto.User{Email: cUser.Email})
+
 			schedule := repository.CreateSubscriptionSchedule(subscriptionData.SubscriptionScheduleData)
 			sub := repository.CreateSubscription(user, subscriptionData.Sites, schedule.ID, true)
 
@@ -205,7 +206,7 @@ func main() {
 				jsonData, _ := json.Marshal(subData)
 				c.Data(http.StatusOK, "application/json", jsonData)
 			} else {
-				c.JSON(404, gin.H{"error": "Invalid request"})
+				c.JSON(403, gin.H{"error": "Unathorized"})
 			}
 		}
 
@@ -214,7 +215,7 @@ func main() {
 	r.POST("/cancel", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		email := auth.User(c).Email
 		if email == "" {
-			c.JSON(404, gin.H{"error": "Invalid request"})
+			c.JSON(403, gin.H{"error": "Unathorized"})
 		} else {
 			sub, _ := repository.GetSubscriptionByEmail(email)
 			repository.CancelSubscription(&sub)

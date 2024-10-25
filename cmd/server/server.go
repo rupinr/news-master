@@ -46,7 +46,9 @@ func main() {
 	})
 
 	r.Use(config)
-	r.POST("/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+
+	/*Admin  API Start*/
+	r.POST("/admin/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var topic dto.Topic
 		if c.ShouldBindJSON(&topic) == nil {
 			repository.CreateTopic(topic)
@@ -55,7 +57,7 @@ func main() {
 		}
 	})
 
-	r.PUT("/topic/:topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+	r.PUT("/admin/topic/:topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		topicName := c.Param("topic")
 		var update dto.TopicUpdate
 		if c.ShouldBindJSON(&update) == nil {
@@ -68,7 +70,7 @@ func main() {
 		}
 	})
 
-	r.POST("/site", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+	r.POST("/admin/site", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var site dto.Site
 		if c.ShouldBindJSON(&site) == nil {
 			repository.CreateSite(site)
@@ -77,17 +79,16 @@ func main() {
 		}
 	})
 
-	r.GET("/sites", func(c *gin.Context) {
-		sites := repository.GetActiveSites()
-		var siteData []dto.Site
-		for _, site := range sites {
-			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name})
+	r.POST("/admin/sites/update", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+		var sites []dto.Site
+		if c.ShouldBindJSON(&sites) == nil {
+			repository.UpdateSites(sites)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
-		jsonData, _ := json.Marshal(siteData)
-		c.Data(http.StatusOK, "application/json", jsonData)
 	})
 
-	r.GET("/sites/all", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
+	r.GET("/admin//sites/all", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		sites := repository.GetAllSites()
 		var siteData []dto.Site
 		for _, site := range sites {
@@ -96,11 +97,23 @@ func main() {
 		jsonData, _ := json.Marshal(siteData)
 		c.Data(http.StatusOK, "application/json", jsonData)
 	})
+	/*Admin  API End*/
 
-	r.POST("/sites/update", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
-		var sites []dto.Site
-		if c.ShouldBindJSON(&sites) == nil {
-			repository.UpdateSites(sites)
+	/*User Unathorised API Start*/
+	r.GET("/sites", func(c *gin.Context) {
+		sites := repository.GetActiveSites()
+		var siteData []dto.Site
+		for _, site := range sites {
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
+		}
+		jsonData, _ := json.Marshal(siteData)
+		c.Data(http.StatusOK, "application/json", jsonData)
+	})
+
+	r.POST("/feedback", func(c *gin.Context) {
+		var feedback dto.Feedback
+		if c.ShouldBindJSON(&feedback) == nil {
+			service.CreateFeedBackAndTriggerAdminEmail(feedback)
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
@@ -121,7 +134,9 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		}
 	})
+	/*User Unathorised API End*/
 
+	/*User Athorised API Start*/
 	r.POST("/subscribe", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var subscriptionData dto.Subscription
 		err := c.ShouldBindJSON(&subscriptionData)
@@ -205,15 +220,6 @@ func main() {
 
 	})
 
-	r.POST("/feedback", func(c *gin.Context) {
-		var feedback dto.Feedback
-		if c.ShouldBindJSON(&feedback) == nil {
-			service.CreateFeedBackAndTriggerAdminEmail(feedback)
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-		}
-	})
-
 	r.POST("/cancel", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		email := auth.User(c).Email
 		if email == "" {
@@ -224,6 +230,7 @@ func main() {
 			repository.MarkUserDeleted(email)
 		}
 	})
+	/*User Athorised API End*/
 
 	r.Run()
 }

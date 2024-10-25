@@ -69,8 +69,6 @@ func SendNewsletter() {
 			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
 			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites)
 
-			fmt.Println(articles)
-
 			//Fix, do not send, it procedded today....
 			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
 

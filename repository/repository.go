@@ -63,7 +63,9 @@ func UpdateSites(siteData []dto.Site) {
 		}
 	}
 	for _, v := range siteData {
-		db().Where(&sites).UpdateColumns(entity.Site{
+		db().Where(entity.Site{
+			Url: v.Url,
+		}).UpdateColumns(entity.Site{
 			Name:   v.Name,
 			Active: v.Active,
 		})

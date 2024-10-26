@@ -11,6 +11,7 @@ import (
 	"news-master/repository"
 	"news-master/service"
 	"news-master/startup"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func main() {
 	}
 
 	config := cors.New(cors.Config{
-		AllowOrigins: []string{app.Config.AllowOrigin},
+		AllowOrigins: strings.Split(app.Config.AllowOrigin, ", "),
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders: []string{"Authorization", "Content-Type"},
 	})

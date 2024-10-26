@@ -30,10 +30,13 @@ jobs:
               ${{ runner.os }}-go-
 
       - name: Build Server
-        run: go build cmd/server/server.go
+        run: go build -o server cmd/server/server.go
 
       - name: Build Scheduler
-        run: go build cmd/scheduler/scheduler.go
+        run: go build -o scheduler cmd/scheduler/scheduler.go
+
+      - name: Run Debug commands
+        run: ls -ltra
 
       - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7

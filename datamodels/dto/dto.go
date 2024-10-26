@@ -20,7 +20,7 @@ type Site struct {
 	Active bool   `json:"active"`
 }
 type Sites struct {
-	Sites []Site `json:"sites"`
+	Sites []Site `json:"sites,omitempty"`
 }
 
 type NewsletterData struct {

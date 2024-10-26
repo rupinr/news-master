@@ -90,7 +90,8 @@ func main() {
 
 	r.GET("/admin//sites/all", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		sites := repository.GetAllSites()
-		var siteData []dto.Site
+		siteData := []dto.Site{}
+
 		for _, site := range sites {
 			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
 		}
@@ -102,7 +103,7 @@ func main() {
 	/*User Unathorised API Start*/
 	r.GET("/sites", func(c *gin.Context) {
 		sites := repository.GetActiveSites()
-		var siteData []dto.Site
+		siteData := []dto.Site{}
 		for _, site := range sites {
 			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
 		}

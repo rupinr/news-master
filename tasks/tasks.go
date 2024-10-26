@@ -58,7 +58,7 @@ func FetchNewsTask() {
 }
 
 func SendNewsletter() {
-	subscriptions := repository.GetAllSubscriptions()
+	subscriptions := repository.GetSubscriptionsToProcess()
 
 	if len(subscriptions) == 0 {
 		slog.Warn("No confirmed subscrriptions exist")

@@ -151,11 +151,11 @@ func GetSubscriptionByID(id int) entity.Subscription {
 	return subscription
 }
 
-func GetAllSubscriptions() []entity.Subscription {
+func GetSubscriptionsToProcess() []entity.Subscription {
 
 	var subscriptions []entity.Subscription
-	conditions := entity.Subscription{Confirmed: true}
-	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions, conditions)
+	currentDate := time.Now().Format("2006-01-02") // Get the current date in YYYY-MM-DD format
+	r := db().Where("last_processed_at < ?", currentDate).Where("confiremd = ?", true).Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions)
 	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
 
 	return subscriptions

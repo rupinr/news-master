@@ -32,6 +32,9 @@ func (err Error) Error() string {
 
 func main() {
 	startup.Init()
+	if app.Config.GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.Default()
 	validate, e := custom.InitValidator()
 	if e != nil {
@@ -225,5 +228,5 @@ func main() {
 	})
 	/*User Athorised API End*/
 
-	r.Run()
+	r.Run(fmt.Sprintf(":%v", app.Config.Port))
 }

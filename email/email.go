@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"news-master/app"
+	"news-master/logger"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,12 +30,12 @@ const (
 	CharSet = "UTF-8"
 )
 
-func sendSimulationEmail(recipient string, subject string, htmlBody string, textBody string) {
-
-	slog.Info(fmt.Sprintf("!!!Simulation!!!! Email sent to %v with text %v , html %v and subject %v", recipient, textBody, htmlBody, subject))
+func sendSimulationEmail(recipient string, subject string, htmlBody string, textBody string) error {
+	logger.Log.Debug(fmt.Sprintf("!!!Simulation!!!! Email sent to %v with text %v , html %v and subject %v", recipient, textBody, htmlBody, subject))
+	return nil
 }
 
-func sendSesEmail(recipient string, subject string, htmlBody string, textBody string) {
+func sendSesEmail(recipient string, subject string, htmlBody string, textBody string) error {
 
 	once.Do(setupSession)
 	input := &ses.SendEmailInput{
@@ -63,20 +64,19 @@ func sendSesEmail(recipient string, subject string, htmlBody string, textBody st
 		Source: aws.String(app.Config.EmailSender),
 	}
 
-	_, err := svc.SendEmail(input)
-
-	if err != nil {
-		slog.Error(err.Error())
-		return
+	_, emailErr := svc.SendEmail(input)
+	if emailErr == nil {
+		logger.Log.Debug(fmt.Sprintf("Email sent to %v", recipient))
 	}
-	slog.Debug("Email Sent to address: " + recipient)
+	return emailErr
+
 }
 
-func SendEmail(recipient string, subject string, htmlBody string, textBody string) {
+func SendEmail(recipient string, subject string, htmlBody string, textBody string) error {
 	if app.Config.EmailSimulatorMode == string(OFF) {
-		sendSesEmail(recipient, subject, htmlBody, textBody)
+		return sendSesEmail(recipient, subject, htmlBody, textBody)
 	} else {
-		sendSimulationEmail(recipient, subject, htmlBody, textBody)
+		return sendSimulationEmail(recipient, subject, htmlBody, textBody)
 	}
 }
 

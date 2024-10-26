@@ -170,7 +170,7 @@ func SetLastProcessedAt(subscriptionId uint) {
 	db().Save(&sub)
 }
 
-func GetArticlesFrom(fromDate time.Time, sites []string) []entity.Article {
+func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []string) []entity.Article {
 	var articles []entity.Article
 	db().Where("created_at > ?", fromDate).Where("site IN ?", sites).Find(&articles)
 	return articles

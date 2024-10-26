@@ -1,15 +1,12 @@
 package process
 
 import (
-	"fmt"
 	"news-master/datamodels/common"
 	"news-master/datamodels/entity"
 	"time"
 )
 
-type CallBack func(uint)
-
-func Notify(currentServerTime *time.Time, subscription *entity.Subscription, updateLastProcessedAt CallBack) bool {
+func IsRightTime(currentServerTime *time.Time, subscription *entity.Subscription) bool {
 	location, _ := time.LoadLocation(subscription.SubscriptionSchedule.TimeZone)
 	weekdayInLocation := currentServerTime.In(location).Weekday()
 	if enabledOnSunday(subscription) && isSundayInLocation(weekdayInLocation) ||
@@ -19,7 +16,7 @@ func Notify(currentServerTime *time.Time, subscription *entity.Subscription, upd
 		enabledOnThursday(subscription) && isThursdayInLocation(weekdayInLocation) ||
 		enabledOnFriday(subscription) && isFridayInLocation(weekdayInLocation) ||
 		enabledOnSaturday(subscription) && isSaturdayInLocation(weekdayInLocation) {
-		return fireNotificationInTimeSlot(currentServerTime, subscription, updateLastProcessedAt)
+		return fireNotificationInTimeSlot(currentServerTime, subscription)
 	} else {
 		return false
 	}
@@ -73,24 +70,14 @@ func enabledOnSaturday(subscription *entity.Subscription) bool {
 	return subscription.SubscriptionSchedule.Saturday
 }
 
-func fireNotificationInTimeSlot(timeInLocation *time.Time, subscription *entity.Subscription, callback CallBack) bool {
+func fireNotificationInTimeSlot(timeInLocation *time.Time, subscription *entity.Subscription) bool {
 	if subscription.SubscriptionSchedule.TimeSlot == common.Morning && timeSlotInLocation(timeInLocation, &subscription.SubscriptionSchedule) == common.Morning ||
 		subscription.SubscriptionSchedule.TimeSlot == common.Afternoon && timeSlotInLocation(timeInLocation, &subscription.SubscriptionSchedule) == common.Afternoon ||
 		subscription.SubscriptionSchedule.TimeSlot == common.Evening && timeSlotInLocation(timeInLocation, &subscription.SubscriptionSchedule) == common.Evening ||
 		subscription.SubscriptionSchedule.TimeSlot == common.Night && timeSlotInLocation(timeInLocation, &subscription.SubscriptionSchedule) == common.Night {
-		sendEmail(subscription.User.Email)
-		if callback != nil {
-			callback(subscription.ID)
-		}
 		return true
 	}
 	return false
-}
-
-func sendEmail(user string) {
-
-	fmt.Printf("Sending Email to %v\n", user)
-
 }
 
 func timeSlotInLocation(currentServerTime *time.Time, schedule *entity.SubscriptionSchedule) common.TimeSlot {

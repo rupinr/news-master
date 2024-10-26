@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"news-master/app"
 	"news-master/auth"
-	"news-master/cmd/process"
+	notification "news-master/cmd/process"
 	"news-master/datamodels/dto"
 	"news-master/email"
 	"news-master/helper"
+	"news-master/logger"
 	"news-master/repository"
 	"time"
 )
@@ -19,36 +19,35 @@ import (
 func FetchNewsTask() {
 	sites := repository.GetActiveSites()
 	if len(sites) == 0 {
-		slog.Warn("No active sites")
+		logger.Log.Warn("No active sites")
 	}
 
 	for _, site := range sites {
 
-		resp, err := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", app.Config.NewsDataApiUrl, app.Config.NewsDataApiKey, site.Url))
-		fmt.Printf("Site: %v", site)
+		resp, apiErr := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", app.Config.NewsDataApiUrl, app.Config.NewsDataApiKey, site.Url))
+		logger.Log.Debug(fmt.Sprintf("Site: %v", site))
 
-		if err != nil {
-			// handle error
-			fmt.Println("Error:", err)
+		if apiErr != nil {
+			logger.Log.Error(fmt.Sprintf("Error fetching News API: %v", apiErr.Error()))
 			return
 		}
 		defer resp.Body.Close()
 		var response dto.NewsdataApiResponse
-		body, err := io.ReadAll(resp.Body)
+		body, readErr := io.ReadAll(resp.Body)
 
-		if err != nil {
-			// handle error
-			fmt.Println("Error:", err)
+		if readErr != nil {
+			logger.Log.Error(fmt.Sprintf("Error Reading response from News API: %v", readErr.Error()))
 			return
 		}
 
-		errUnmarshal := json.Unmarshal(body, &response)
+		unmarshalErr := json.Unmarshal(body, &response)
 
-		if errUnmarshal != nil {
-			// handle error
-			fmt.Println("Error:", err)
+		if unmarshalErr != nil {
+			logger.Log.Error(fmt.Sprintf("Error Processing response from News API: %v", unmarshalErr.Error()))
 			return
 		}
+
+		logger.Log.Debug(fmt.Sprintf("Found %v ariticles", len(response.Results)))
 
 		for _, result := range response.Results {
 			repository.CreateResult(result)
@@ -60,38 +59,52 @@ func FetchNewsTask() {
 func SendNewsletter() {
 	subscriptions := repository.GetSubscriptionsToProcess()
 
-	if len(subscriptions) == 0 {
-		slog.Warn("No confirmed subscrriptions exist")
-	}
+	logger.Log.Debug(fmt.Sprintf("Processing %v number of subscriptions", len(subscriptions)))
+
 	for _, subscription := range subscriptions {
 
-		//TODO add logs, when there is no data..
-		if subscription.Confirmed {
-			time := time.Now()
-			fmt.Printf("Last processed at %v\n", subscription.LastProcessedAt)
-			articles := repository.GetArticlesFrom(subscription.LastProcessedAt, subscription.Sites)
+		time := time.Now()
+		canSendEmail := notification.IsRightTime(&time, &subscription)
+		if canSendEmail {
+			articles := repository.GetArticlesAfterLastProcessedTime(subscription.LastProcessedAt, subscription.Sites)
 
-			//Fix, do not send, it procedded today....
-			process.Notify(&time, &subscription, repository.SetLastProcessedAt)
+			if len(articles) == 0 {
+				logger.Log.Debug("No articles found for the subscription, not sending email")
+				continue
+			}
 
 			token, tokenErr := auth.SubsriberToken(subscription.UserID, subscription.User.Email, 24)
 
-			html, err := email.GenerateNewsLetterHTML(dto.NewsletterData{
+			if tokenErr != nil {
+				logger.Log.Error(fmt.Sprintf("Error generating token for email %v", tokenErr.Error()))
+				continue
+			}
+
+			html, htmlErr := email.GenerateNewsLetterHTML(dto.NewsletterData{
 				Articles:               articles,
 				ManageSubscriptionLink: helper.PreAuthLink(token),
 				AboutLink:              helper.AboutLinkLink(),
 				PrivacyLink:            helper.PrivacyLink(),
 			})
 
-			if err == nil && tokenErr == nil {
-				email.SendEmail(
-					subscription.User.Email,
-					"Your daily newsletter",
-					html,
-					"")
-			} else {
-				slog.Error("Error sending email", err.Error(), tokenErr.Error())
+			if htmlErr != nil {
+				logger.Log.Error(fmt.Sprintf("Error generating HTML for email %v", htmlErr.Error()))
+				continue
 			}
+			emailError := email.SendEmail(
+				subscription.User.Email,
+				"Your daily newsletter",
+				html,
+				"")
+
+			if emailError != nil {
+				logger.Log.Error(fmt.Sprintf("Unable to send email to %v", emailError.Error()))
+			} else {
+				logger.Log.Debug(fmt.Sprintf("Setting last processed time stamp for subscription with ID %v", subscription.ID))
+				repository.SetLastProcessedAt(subscription.ID)
+			}
+		} else {
+			continue
 		}
 	}
 }

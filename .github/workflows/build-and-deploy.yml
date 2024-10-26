@@ -24,17 +24,7 @@ jobs:
       - name: Build Scheduler
         run: go build cmd/scheduler/scheduler.go
 
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-            host: ${{ secrets.SERVER }}
-            username: ${{ secrets.USERNAME }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            port: 22
-            source: "server,scheduler"
-            target: /usr/local/bin/
-
-      - name: Run SSH Command
+      - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SERVER }}
@@ -42,6 +32,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            sudo scp server /usr/local/bin/
+            sudo scp scheduler /usr/local/bin/
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

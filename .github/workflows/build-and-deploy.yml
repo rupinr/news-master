@@ -35,10 +35,15 @@ jobs:
         run: go build -o scheduler cmd/scheduler/scheduler.go
 
 
-      - name: Copy Files to Temp Directory
-        run: |
-          scp server ${{ secrets.USERNAME }}@${{ secrets.SERVER }}:/tmp
-          scp scheduler ${{ secrets.USERNAME }}@${{ secrets.SERVER }}:/tmp
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "server,scheduler"
+          target: /tmp/
 
       - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7

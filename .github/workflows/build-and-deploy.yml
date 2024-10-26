@@ -36,7 +36,7 @@ jobs:
         run: go build -o scheduler cmd/scheduler/scheduler.go
 
       - name: Run Debug commands
-        run: ls -ltra
+        run: echo $GITHUB_WORKSPACE
 
       - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7
@@ -46,8 +46,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo scp server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
-            sudo scp scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp $GITHUB_WORKSPACE/server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp $GITHUB_WORKSPACE/scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

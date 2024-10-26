@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -27,7 +26,7 @@ jobs:
             ~/.config/gotestsum
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-              ${{ runner.os }}-go-
+            ${{ runner.os }}-go-
 
       - name: Build Server
         run: go build -o server cmd/server/server.go
@@ -35,8 +34,13 @@ jobs:
       - name: Build Scheduler
         run: go build -o scheduler cmd/scheduler/scheduler.go
 
-      - name: Run Debug commands
-        run: echo $GITHUB_WORKSPACE
+      - name: Get absolute path of the server binary
+        id: server-path
+        run: echo "SERVER_PATH=$(realpath server)" >> $GITHUB_ENV
+
+      - name: Get absolute path of the scheduler binary
+        id: scheduler-path
+        run: echo "SCHEDULER_PATH=$(realpath scheduler)" >> $GITHUB_ENV
 
       - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7
@@ -46,8 +50,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo scp $GITHUB_WORKSPACE/server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
-            sudo scp $GITHUB_WORKSPACE/scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp $SERVER_PATH ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp $SCHEDULER_PATH ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

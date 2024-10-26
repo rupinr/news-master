@@ -8,6 +8,7 @@ import (
 	"news-master/auth"
 	custom "news-master/custom_validators"
 	"news-master/datamodels/dto"
+	"news-master/logger"
 	"news-master/repository"
 	"news-master/service"
 	"news-master/startup"
@@ -38,9 +39,9 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.Default()
-	validate, e := custom.InitValidator()
-	if e != nil {
-		fmt.Printf("Error initializing validator: %v\n", e)
+	validate, validatorError := custom.InitValidator()
+	if validatorError != nil {
+		logger.Log.Error(fmt.Sprintf("Error initializing validator: %v", validatorError))
 		return
 	}
 

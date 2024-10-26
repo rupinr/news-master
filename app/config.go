@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"news-master/logger"
 	"os"
 	"reflect"
 
@@ -43,20 +42,18 @@ type EnvVars struct {
 
 var Config EnvVars
 
-func Load() {
+func LoadEnvVars() {
 
 	if envFileExists() {
-		logger.Log.Info(".env.development exists, Running in Dev mode")
 		loadFromEnvFile()
 	} else {
-		logger.Log.Info("Running in Production mode")
 		loadFromAws()
 	}
 
 }
 
 func envFileExists() bool {
-	info, err := os.Stat(".env.development")
+	info, err := os.Stat(".env")
 	if os.IsNotExist(err) {
 		return false
 	}
@@ -64,7 +61,7 @@ func envFileExists() bool {
 }
 
 func loadFromEnvFile() {
-	godotenv.Load(".env.development")
+	godotenv.Load()
 	t := reflect.TypeOf(Config)
 	v := reflect.ValueOf(&Config).Elem()
 

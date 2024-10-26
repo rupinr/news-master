@@ -14,26 +14,17 @@ import (
 
 func main() {
 	startup.Init()
-	scheduler, err := gocron.NewScheduler()
-	if err != nil {
-		panic("Unable to start scheduler....")
+	scheduler, schedulerErr := gocron.NewScheduler()
+	if schedulerErr != nil {
+		panic(fmt.Sprintf("Unable to start scheduler %v ", schedulerErr.Error()))
 	}
-	_, subscriptionJoberr := scheduler.NewJob(
-		gocron.CronJob(app.Config.SubscriptionMailCron, false),
-		gocron.NewTask(
-			tasks.SendNewsletter,
-		),
-	)
+	_, subscriptionJoberr := scheduler.NewJob(gocron.CronJob(app.Config.SubscriptionMailCron, false), gocron.NewTask(tasks.SendNewsletter))
 
-	_, newsFetchJobErr := scheduler.NewJob(
-		gocron.CronJob(app.Config.NewsFetchCron, false),
-
-		gocron.NewTask(tasks.FetchNewsTask),
-	)
+	_, newsFetchJobErr := scheduler.NewJob(gocron.CronJob(app.Config.NewsFetchCron, false), gocron.NewTask(tasks.FetchNewsTask))
 
 	if subscriptionJoberr != nil || newsFetchJobErr != nil {
 
-		panic(fmt.Sprintf("Error in jobs %v", newsFetchJobErr))
+		panic(fmt.Sprintf("Error in jobs %v %v", newsFetchJobErr, subscriptionJoberr))
 	}
 
 	scheduler.Start()

@@ -2,12 +2,11 @@ package app
 
 import (
 	"encoding/json"
-	"log/slog"
+	"news-master/logger"
 	"os"
 	"reflect"
 
 	"context"
-	"log"
 
 	"github.com/joho/godotenv"
 
@@ -39,6 +38,7 @@ type EnvVars struct {
 	SiteUrl              string `json:"SITE_URL"`
 	EmailSimulatorMode   string `json:"EMAIL_SIMULATOR_MODE"`
 	AdminEmail           string `json:"ADMIN_EMAIL"`
+	LogLevel             string `json:"LOG_LEVEL"`
 }
 
 var Config EnvVars
@@ -46,10 +46,10 @@ var Config EnvVars
 func Load() {
 
 	if envFileExists() {
-		slog.Info(".env.development exists, Running in Dev mode")
+		logger.Log.Info(".env.development exists, Running in Dev mode")
 		loadFromEnvFile()
 	} else {
-		slog.Info("Running in Production mode")
+		logger.Log.Info("Running in Production mode")
 		loadFromAws()
 	}
 
@@ -79,9 +79,9 @@ func loadFromAws() {
 	const secretName = "quick-brew-secrets"
 	const region = "eu-central-1"
 
-	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-	if err != nil {
-		log.Fatal(err)
+	config, configErr := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if configErr != nil {
+		panic("Error loading aws config, existing !")
 	}
 
 	svc := secretsmanager.NewFromConfig(config)
@@ -90,13 +90,16 @@ func loadFromAws() {
 		SecretId: aws.String(secretName),
 	}
 
-	result, err := svc.GetSecretValue(context.TODO(), input)
-	if err != nil {
-		log.Fatal(err.Error())
+	result, secretErr := svc.GetSecretValue(context.TODO(), input)
+	if secretErr != nil {
+		panic("Error Fetching aws secret, existing !")
 	}
 
 	var secretString string = *result.SecretString
 
-	json.Unmarshal([]byte(secretString), &Config)
+	jsonErr := json.Unmarshal([]byte(secretString), &Config)
+	if jsonErr != nil {
+		panic("Error Processing config json from aws")
+	}
 
 }

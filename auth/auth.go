@@ -3,9 +3,9 @@ package auth
 import (
 	"crypto/rsa"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"news-master/app"
+	"news-master/logger"
 	"os"
 	"time"
 
@@ -41,11 +41,11 @@ var (
 )
 
 func LoadKeys() {
-	slog.Info("Initing Keys")
+	logger.Log.Info("Loading Private Public Keys")
 	privateKey, errPvtKey = loadPrivateKey()
 	publicKey, errPubKey = loadPublicKey()
 	if errPubKey != nil || errPvtKey != nil {
-		panic(fmt.Sprintf("Unable Load Keys...%v", errPubKey))
+		panic(fmt.Sprintf("Unable Load Keys %v %v", errPubKey, errPvtKey))
 	}
 
 }

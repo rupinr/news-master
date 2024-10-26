@@ -43,8 +43,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo scp ${{ github.workspace }}/server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
-            sudo scp ${{ github.workspace }}/scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

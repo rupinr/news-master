@@ -34,13 +34,11 @@ jobs:
       - name: Build Scheduler
         run: go build -o scheduler cmd/scheduler/scheduler.go
 
-      - name: Get absolute path of the server binary
-        id: server-path
-        run: echo "SERVER_PATH=$(realpath server)" >> $GITHUB_ENV
 
-      - name: Get absolute path of the scheduler binary
-        id: scheduler-path
-        run: echo "SCHEDULER_PATH=$(realpath scheduler)" >> $GITHUB_ENV
+      - name: Copy Files to Temp Directory
+        run: |
+          scp server ${{ secrets.USERNAME }}@${{ secrets.SERVER }}:/tmp
+          scp scheduler ${{ secrets.USERNAME }}@${{ secrets.SERVER }}:/tmp
 
       - name: Deploy and Start Services
         uses: appleboy/ssh-action@v0.1.7
@@ -50,8 +48,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo scp $SERVER_PATH ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
-            sudo scp $SCHEDULER_PATH ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo mv /tmp/server /usr/local/bin/server
+            sudo mv /tmp/scheduler /usr/local/bin/scheduler
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

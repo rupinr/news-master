@@ -18,6 +18,17 @@ jobs:
         with:
           go-version: '1.22.4'
 
+      - name: Cache Go Modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/.cache/pkg
+            ~/.config/gotestsum
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+              ${{ runner.os }}-go-
+
       - name: Build Server
         run: go build cmd/server/server.go
 
@@ -32,8 +43,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo scp server /usr/local/bin/
-            sudo scp scheduler /usr/local/bin/
+            sudo scp ${{ github.workspace }}/server ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
+            sudo scp ${{ github.workspace }}/scheduler ubuntu@${{ secrets.SERVER }}:/usr/local/bin/
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
             sudo systemctl start scheduler

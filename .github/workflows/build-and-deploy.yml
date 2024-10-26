@@ -57,7 +57,7 @@ jobs:
             sudo mv /tmp/scheduler /usr/local/bin/scheduler
             sudo chown appuser:appuser /usr/local/bin/server
             sudo chown appuser:appuser /usr/local/bin/scheduler
-            sudo systemctl start scheduler
+            sudo systemctl restart scheduler
             sudo systemctl enable scheduler
-            sudo systemctl start server
+            sudo systemctl restart server
             sudo systemctl enable server

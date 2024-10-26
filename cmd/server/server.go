@@ -12,6 +12,7 @@ import (
 	"news-master/service"
 	"news-master/startup"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -45,8 +46,9 @@ func main() {
 
 	config := cors.New(cors.Config{
 		AllowOrigins: strings.Split(app.Config.AllowOrigin, ", "),
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Authorization", "Content-Type"},
+		MaxAge:       24 * time.Hour, // Cache preflight response
 	})
 
 	r.Use(config)

@@ -30,7 +30,6 @@ func main() {
 
 		gocron.NewTask(tasks.FetchNewsTask),
 	)
-	fmt.Printf("JOBS %v", scheduler.Jobs()[0].ID())
 
 	if subscriptionJoberr != nil || newsFetchJobErr != nil {
 

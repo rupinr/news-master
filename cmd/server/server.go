@@ -108,15 +108,6 @@ func main() {
 	/*Admin  API End*/
 
 	/*User Unathorised API Start*/
-	r.GET("/sites", func(c *gin.Context) {
-		sites := repository.GetActiveSites()
-		siteData := []dto.Site{}
-		for _, site := range sites {
-			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
-		}
-		jsonData, _ := json.Marshal(siteData)
-		c.Data(http.StatusOK, "application/json", jsonData)
-	})
 
 	r.POST("/feedback", func(c *gin.Context) {
 		var feedback dto.Feedback
@@ -145,6 +136,17 @@ func main() {
 	/*User Unathorised API End*/
 
 	/*User Athorised API Start*/
+
+	r.GET("/sites", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
+		sites := repository.GetActiveSites()
+		siteData := []dto.Site{}
+		for _, site := range sites {
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
+		}
+		jsonData, _ := json.Marshal(siteData)
+		c.Data(http.StatusOK, "application/json", jsonData)
+	})
+
 	r.POST("/subscribe", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		var subscriptionData dto.Subscription
 		err := c.ShouldBindJSON(&subscriptionData)

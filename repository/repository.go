@@ -141,9 +141,10 @@ func IncrementAndGetLoginAttempt(userData dto.User) entity.User {
 func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	var user entity.User
 	result := db().First(&user, entity.User{Email: email})
-	applogger.Log.Error(fmt.Sprintf("Error finding subscription with email %v", result.Error.Error()))
+	if result.Error != nil {
+		applogger.Log.Error(fmt.Sprintf("Error finding subscription with email %v", result.Error.Error()))
+	}
 	var subscription entity.Subscription
-
 	db().
 		Joins("SubscriptionSchedule").
 		Joins("User").

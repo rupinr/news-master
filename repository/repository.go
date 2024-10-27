@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"net/url"
 	"news-master/app"
 	"news-master/datamodels/dto"
 	"news-master/datamodels/entity"
@@ -82,9 +83,17 @@ func CreateResult(result dto.Article) {
 		Language:    result.Language,
 		Country:     pq.StringArray(result.Country),
 		Category:    pq.StringArray(result.Category),
-		Site:        result.SourceUrl,
+		Site:        getDomain(result.SourceUrl),
 	}
 	db().Create(&article)
+}
+
+func getDomain(rawURL string) string {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Sprintf("INVALID_RAW_URL_%v", rawURL)
+	}
+	return parsedURL.Host
 }
 
 func GetActiveSites() []entity.Site {

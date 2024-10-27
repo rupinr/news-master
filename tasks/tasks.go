@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"news-master/app"
 	"news-master/auth"
 	notification "news-master/cmd/process"
@@ -40,6 +41,10 @@ func FetchNewsTask() {
 			return
 		}
 
+		for i := range response.Results {
+			response.Results[i].SourceUrl = getDomain(response.Results[i].SourceUrl)
+		}
+
 		unmarshalErr := json.Unmarshal(body, &response)
 
 		if unmarshalErr != nil {
@@ -54,6 +59,14 @@ func FetchNewsTask() {
 		}
 
 	}
+}
+
+func getDomain(rawURL string) string {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Sprintf("INVALID_RAW_URL_%v", rawURL)
+	}
+	return parsedURL.Host
 }
 
 func SendNewsletter() {

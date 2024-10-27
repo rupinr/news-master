@@ -19,7 +19,7 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 	maxLoginAttempt, _ := strconv.Atoi(app.Config.MaxLoginAttempt)
 	if createdUser.LoginAttemptCount < maxLoginAttempt {
 		repository.IncrementAndGetLoginAttempt(user)
-		token, _ := auth.SubsriberToken(createdUser.ID, user.Email, 24)
+		token, _ := auth.SubscriberToken(createdUser.ID, user.Email, 24)
 		defaultValue := true
 		subscriptionSchedule := repository.CreateSubscriptionSchedule(
 			dto.SubscriptionSchedule{

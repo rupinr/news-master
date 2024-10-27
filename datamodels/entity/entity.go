@@ -15,7 +15,7 @@ type Topic struct {
 }
 type Site struct {
 	gorm.Model
-	Url    string
+	Url    string `gorm:"index:idx_url"`
 	Name   string
 	Active bool `gorm:"index:"`
 }
@@ -40,7 +40,6 @@ type Subscription struct {
 	SubscriptionSchedule   SubscriptionSchedule
 	Confirmed              bool
 	LastProcessedAt        time.Time
-	//TODO FIxmne not updating ltimestamp
 }
 type SubscriptionSchedule struct {
 	gorm.Model
@@ -65,5 +64,5 @@ type Article struct {
 	Language    string
 	Country     pq.StringArray `gorm:"type:text[]"`
 	Category    pq.StringArray `gorm:"type:text[]"`
-	Site        string
+	Site        string         `gorm:"index:site"`
 }

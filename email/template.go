@@ -33,7 +33,7 @@ func GenerateRegistrationHTML(emailData EmailData) (string, error) {
 	return htmlBody.String(), nil
 }
 
-func GenerateNewsLetterHTML(articles dto.NewsletterData) (string, error) {
+func NewsLetterHTML(articles dto.NewsletterData) (string, error) {
 	htmlTemplate, _ := newsLetterTemplate.ReadFile("news-letter.html")
 
 	t, err := template.New("email").Parse(string(htmlTemplate))

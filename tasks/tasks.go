@@ -23,13 +23,21 @@ func FetchNewsTask() {
 		logger.Log.Warn("No active sites")
 	}
 
-	for _, site := range sites {
+	apiRequest, _ := url.Parse(app.Config.NewsDataApiUrl)
+	apiRequest.Path = "/api/1/latest"
+	params := url.Values{}
+	params.Add("apikey", app.Config.NewsDataApiKey)
 
-		resp, apiErr := http.Get(fmt.Sprintf("%s/api/1/latest?apikey=%s&domainurl=%s", app.Config.NewsDataApiUrl, app.Config.NewsDataApiKey, site.Url))
-		logger.Log.Debug(fmt.Sprintf("Site: %v", site))
+	for _, site := range sites {
+		params.Set("domainurl", site.Url)
+		apiRequest.RawQuery = params.Encode()
+
+		logger.Log.Debug("Fetching", "url", apiRequest.String())
+
+		resp, apiErr := http.Get(apiRequest.String())
 
 		if apiErr != nil {
-			logger.Log.Error(fmt.Sprintf("Error fetching News API: %v", apiErr.Error()))
+			logger.Log.Error("Error fetching News API", "error", apiErr.Error())
 			return
 		}
 		defer resp.Body.Close()
@@ -37,7 +45,7 @@ func FetchNewsTask() {
 		body, readErr := io.ReadAll(resp.Body)
 
 		if readErr != nil {
-			logger.Log.Error(fmt.Sprintf("Error Reading response from News API: %v", readErr.Error()))
+			logger.Log.Error("Error Reading response from News API", "error", readErr.Error())
 			return
 		}
 
@@ -48,11 +56,11 @@ func FetchNewsTask() {
 		unmarshalErr := json.Unmarshal(body, &response)
 
 		if unmarshalErr != nil {
-			logger.Log.Error(fmt.Sprintf("Error Processing response from News API: %v", unmarshalErr.Error()))
+			logger.Log.Error("Error Processing response from News API", "error", unmarshalErr.Error())
 			return
 		}
 
-		logger.Log.Debug(fmt.Sprintf("Found %v ariticles", len(response.Results)))
+		logger.Log.Debug("Found ariticles", "count", len(response.Results))
 
 		for _, result := range response.Results {
 			repository.CreateResult(result)
@@ -74,7 +82,9 @@ func SendNewsletter() {
 
 	logger.Log.Debug(fmt.Sprintf("Processing %v number of subscriptions", len(subscriptions)))
 
-	for _, subscription := range subscriptions {
+	for idx, subscription := range subscriptions {
+
+		logger.Log.Debug("Processing Item", "index", idx)
 
 		time := time.Now()
 		canSendEmail := notification.IsRightTime(&time, &subscription)
@@ -86,22 +96,23 @@ func SendNewsletter() {
 				continue
 			}
 
-			token, tokenErr := auth.SubsriberToken(subscription.UserID, subscription.User.Email, 24)
+			token, tokenErr := auth.SubscriberToken(subscription.UserID, subscription.User.Email, 24*7)
 
 			if tokenErr != nil {
-				logger.Log.Error(fmt.Sprintf("Error generating token for email %v", tokenErr.Error()))
+				logger.Log.Error("Error generating token for email", "error", tokenErr.Error())
 				continue
 			}
 
-			html, htmlErr := email.GenerateNewsLetterHTML(dto.NewsletterData{
-				Articles:               articles,
-				ManageSubscriptionLink: helper.PreAuthLink(token),
-				AboutLink:              helper.AboutLinkLink(),
-				PrivacyLink:            helper.PrivacyLink(),
-			})
+			html, htmlErr := email.NewsLetterHTML(
+				dto.NewsletterData{
+					Articles:               articles,
+					ManageSubscriptionLink: helper.PreAuthLink(token),
+					AboutLink:              helper.AboutLinkLink(),
+					PrivacyLink:            helper.PrivacyLink(),
+				})
 
 			if htmlErr != nil {
-				logger.Log.Error(fmt.Sprintf("Error generating HTML for email %v", htmlErr.Error()))
+				logger.Log.Error("Error generating HTML", "error", htmlErr.Error())
 				continue
 			}
 			emailError := email.SendEmail(
@@ -111,13 +122,13 @@ func SendNewsletter() {
 				"")
 
 			if emailError != nil {
-				logger.Log.Error(fmt.Sprintf("Unable to send email to %v", emailError.Error()))
+				logger.Log.Error(fmt.Sprintf("Error sending email %v", emailError.Error()))
 			} else {
 				repository.SetLastProcessedAt(subscription.ID)
-				logger.Log.Debug(fmt.Sprintf("Sent email for subscription with ID and set last_processed %v", subscription.ID))
+				logger.Log.Debug("Sent email for subscription", "sub_id", subscription.ID)
 			}
 		} else {
-			logger.Log.Debug(fmt.Sprintf("The subscription with ID %v is not ellibible to recieve email at this slot", subscription.ID))
+			logger.Log.Debug("The subscription is not eligible to recieve email at this slot", "sub_id", subscription.ID)
 			continue
 		}
 	}

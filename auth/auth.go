@@ -135,7 +135,7 @@ func ValidateJWT(tokenString string) (*DecodedUser, error) {
 	return user, nil
 }
 
-func SubsriberToken(id uint, email string, validityInHours int) (string, error) {
+func SubscriberToken(id uint, email string, validityInHours int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(time.Duration(validityInHours) * time.Hour).Unix(),

@@ -113,10 +113,11 @@ func SendNewsletter() {
 			if emailError != nil {
 				logger.Log.Error(fmt.Sprintf("Unable to send email to %v", emailError.Error()))
 			} else {
-				logger.Log.Debug(fmt.Sprintf("Setting last processed time stamp for subscription with ID %v", subscription.ID))
 				repository.SetLastProcessedAt(subscription.ID)
+				logger.Log.Debug(fmt.Sprintf("Sent email for subscription with ID and set last_processed %v", subscription.ID))
 			}
 		} else {
+			logger.Log.Debug(fmt.Sprintf("The subscription with ID %v is not ellibible to recieve email at this slot", subscription.ID))
 			continue
 		}
 	}

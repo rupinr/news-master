@@ -6,6 +6,7 @@ import (
 	"news-master/app"
 	"news-master/datamodels/dto"
 	"news-master/datamodels/entity"
+	applogger "news-master/logger"
 	"sync"
 	"time"
 
@@ -140,10 +141,13 @@ func IncrementAndGetLoginAttempt(userData dto.User) entity.User {
 func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	var user entity.User
 	result := db().First(&user, entity.User{Email: email})
-	fmt.Println(result.Error)
+	applogger.Log.Error(fmt.Sprintf("Error finding subscription with email %v", result.Error.Error()))
 	var subscription entity.Subscription
 
-	db().Joins("SubscriptionSchedule").Joins("User").Joins("SubscriptionSchedule").Find(&subscription, entity.Subscription{UserID: user.ID})
+	db().
+		Joins("SubscriptionSchedule").
+		Joins("User").
+		Find(&subscription, entity.Subscription{UserID: user.ID})
 
 	return subscription, result.Error
 }
@@ -151,28 +155,24 @@ func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 func GetSubscriptionByID(id int) entity.Subscription {
 
 	var subscription entity.Subscription
-
-	r := db().Joins("SubscriptionSchedule").Joins("User").Find(&subscription, id)
-	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
-
-	fmt.Printf("sub id is %v \n", subscription.ID)
-
+	db().Joins("SubscriptionSchedule").Joins("User").Find(&subscription, id)
 	return subscription
 }
 
 func GetSubscriptionsToProcess() []entity.Subscription {
-
 	var subscriptions []entity.Subscription
-	currentDate := time.Now().Format("2006-01-02") // Get the current date in YYYY-MM-DD format
-	r := db().Where("last_processed_at < ?", currentDate).Where("confirmed = ?", true).Joins("SubscriptionSchedule").Joins("User").Find(&subscriptions)
-	fmt.Printf("Query is %v \n", r.Statement.SQL.String())
-
+	currentDate := time.Now().Format("2006-01-02")
+	db().
+		Where("last_processed_at < ?", currentDate).
+		Where("confirmed = ?", true).
+		Joins("SubscriptionSchedule").
+		Joins("User").
+		Find(&subscriptions)
 	return subscriptions
 }
 
 func SetLastProcessedAt(subscriptionId uint) {
 	time := time.Now()
-	fmt.Printf("setting last processed at as %v for sub %v\n", time, subscriptionId)
 	var sub entity.Subscription
 	db().Find(&sub, subscriptionId)
 	sub.LastProcessedAt = time
@@ -200,7 +200,6 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 		TimeZone:  subscriptionScheduleData.TimeZone,
 	}
 
-	// Map to hold conditions
 	conditions := map[string]interface{}{
 		"monday":    subscriptionScheduleDb.Monday,
 		"tuesday":   subscriptionScheduleDb.Tuesday,
@@ -216,9 +215,9 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 	var subscriptionSchedule entity.SubscriptionSchedule
 
 	if err := db().Where(conditions).FirstOrCreate(&subscriptionSchedule, subscriptionScheduleDb).Error; err != nil {
-		fmt.Println("Error creating or finding record:", err)
+		applogger.Log.Error(fmt.Sprintf("Error creating or finding record: %v", err.Error()))
 	} else {
-		fmt.Printf("Record found or created: %+v\n", subscriptionSchedule)
+		applogger.Log.Debug(fmt.Sprintf("Record found or created: %+v\n", subscriptionSchedule))
 	}
 
 	return subscriptionSchedule
@@ -236,25 +235,6 @@ func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID
 	var subscription entity.Subscription
 	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)
 	return subscription
-}
-
-func UpdateSubscriptionConfirmation(id uint, confirmed bool) error {
-	err = db().Transaction(func(tx *gorm.DB) error {
-		var subscription entity.Subscription
-		if err := tx.Where(&entity.Subscription{UserID: id}).First(&subscription).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("topic not found")
-			}
-			return err
-		}
-		subscription.Confirmed = confirmed
-		if err := tx.Save(&subscription).Error; err != nil {
-			return err
-		}
-		return nil
-	})
-	return err
-
 }
 
 func CreateFeedBack(feedback dto.Feedback) (*entity.Feedback, error) {

@@ -30,6 +30,7 @@ func FetchNewsTask() {
 
 	for _, site := range sites {
 		params.Set("domainurl", site.Url)
+		params.Set("language", site.Language)
 		apiRequest.RawQuery = params.Encode()
 
 		logger.Log.Debug("Fetching", "url", apiRequest.String())

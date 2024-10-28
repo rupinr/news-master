@@ -53,7 +53,9 @@ func UpdateTopic(name string, visibility bool) error {
 func CreateSite(siteData dto.Site) {
 	var siteDb entity.Site
 	db().Where(entity.Site{Url: siteData.Url}).Assign(entity.Site{
-		Name: siteData.Name,
+		Name:     siteData.Name,
+		Language: siteData.Language,
+		Active:   siteData.Active,
 	}).FirstOrCreate(&siteDb)
 }
 
@@ -68,8 +70,9 @@ func UpdateSites(siteData []dto.Site) {
 		db().Where(entity.Site{
 			Url: v.Url,
 		}).UpdateColumns(entity.Site{
-			Name:   v.Name,
-			Active: v.Active,
+			Name:     v.Name,
+			Active:   v.Active,
+			Language: v.Language,
 		})
 	}
 }

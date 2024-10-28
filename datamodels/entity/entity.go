@@ -15,9 +15,10 @@ type Topic struct {
 }
 type Site struct {
 	gorm.Model
-	Url    string `gorm:"index:idx_url"`
-	Name   string
-	Active bool `gorm:"index:"`
+	Url      string `gorm:"index:idx_url"`
+	Name     string
+	Language string
+	Active   bool `gorm:"index:"`
 }
 type User struct {
 	gorm.Model

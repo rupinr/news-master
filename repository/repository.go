@@ -112,11 +112,11 @@ func GetAllSites() []entity.Site {
 	return sites
 }
 
-func CreateUser(userData dto.User) entity.User {
+func CreateUser(userData dto.User) (entity.User, bool, error) {
 	userDb := entity.User{Email: userData.Email}
 	var user entity.User
-	db().Where(userDb).FirstOrCreate(&user, userDb)
-	return user
+	r := db().Where(userDb).FirstOrCreate(&user, userDb)
+	return user, r.RowsAffected == 1, r.Error
 }
 
 func MarkUserDeleted(email string) {
@@ -124,6 +124,13 @@ func MarkUserDeleted(email string) {
 	db().Where(userDb).UpdateColumns(entity.User{
 		Email: fmt.Sprintf("%v@deleted", uuid.New()),
 	})
+}
+
+func ResetLoginCounter(id uint) {
+	user := entity.User{}
+	db().Find(&user, id)
+	user.LoginAttemptCount = 0
+	db().Save(&user)
 }
 
 func GetUser(userData dto.User) entity.User {

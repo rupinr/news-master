@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"news-master/app"
 	"news-master/logger"
+	"news-master/repository"
 	"os"
 	"time"
 
@@ -111,36 +112,43 @@ func AuthMiddleware(validateToken func(Token) *DecodedUser) gin.HandlerFunc {
 
 func ValidateJWT(tokenString string) (*DecodedUser, error) {
 	user := defaultDecodedUser()
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return publicKey, nil
 	})
-
 	if err != nil {
-		return user, err
+		logger.Log.Error("Error parsing token:", "error", err.Error())
+		return nil, err
 	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		user.Admin = false
 		user.Valid = true
-		user.Email = claims["email"].(string)
-		user.ID = uint(claims["id"].(float64))
-
+		user.Email = claims.Email
+		user.ID = claims.ID
+		resetLoginAttemptCounter(user.ID)
 	} else {
-		fmt.Println("Invalid token.")
+		logger.Log.Debug("Invalid token.")
 	}
 
 	return user, nil
 }
 
+func resetLoginAttemptCounter(userId uint) {
+	repository.ResetLoginCounter(userId)
+}
+
 func SubscriberToken(id uint, email string, validityInHours int) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(time.Duration(validityInHours) * time.Hour).Unix(),
-		"id":    id,
-	})
+	claims := CustomClaims{
+		email,
+		id,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(validityInHours) * time.Hour)),
+			Issuer:    "api",
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", err
@@ -153,4 +161,10 @@ func User(c *gin.Context) *DecodedUser {
 	contextUser, _ := c.Get("user")
 	user := contextUser.(*DecodedUser)
 	return user
+}
+
+type CustomClaims struct {
+	Email string `json:"Email"`
+	ID    uint   `json:"id"`
+	jwt.RegisteredClaims
 }

@@ -97,7 +97,7 @@ func SendNewsletter() {
 				continue
 			}
 
-			token, tokenErr := auth.SubscriberToken(subscription.UserID, subscription.User.Email, 24*7)
+			token, tokenErr := auth.SubscriberToken(subscription.UserID, subscription.User.Email, 24*30) //30 days
 
 			if tokenErr != nil {
 				logger.Log.Error("Error generating token for email", "error", tokenErr.Error())

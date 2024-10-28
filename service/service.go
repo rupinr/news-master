@@ -15,32 +15,18 @@ import (
 )
 
 func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
-	createdUser := repository.CreateUser(user)
+	createdUser, isNewUser, createErr := repository.CreateUser(user)
 	maxLoginAttempt, _ := strconv.Atoi(app.Config.MaxLoginAttempt)
 	if createdUser.LoginAttemptCount < maxLoginAttempt {
 		repository.IncrementAndGetLoginAttempt(user)
+		if isNewUser {
+			createSubscriptionSchedule(createdUser)
+		}
 		token, _ := auth.SubscriberToken(createdUser.ID, user.Email, 24)
-		defaultValue := true
-		subscriptionSchedule := repository.CreateSubscriptionSchedule(
-			dto.SubscriptionSchedule{
-				DailyFrequency: dto.DailyFrequency{
-					Monday:    &defaultValue,
-					Tuesday:   &defaultValue,
-					Wednesday: &defaultValue,
-					Thursday:  &defaultValue,
-					Friday:    &defaultValue,
-					Saturday:  &defaultValue,
-					Sunday:    &defaultValue,
-				},
-				TimeSlot: common.Morning,
-			},
-		)
-		repository.CreateSubscription(createdUser, []string{}, subscriptionSchedule.ID, false)
-
 		emailData := email.EmailData{ActivationLink: helper.PreAuthLink(token)}
 		htmlEmail, htmlErr := email.GenerateRegistrationHTML(emailData)
 		textEmail, txtErr := email.GenerateText(emailData)
-		if htmlErr == nil && txtErr == nil {
+		if htmlErr == nil && txtErr == nil && createErr == nil {
 			go email.SendEmail(
 				createdUser.Email,
 				"Activate Your QuickBrew Subscription Now!",
@@ -55,6 +41,25 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 		return createdUser, errors.New("max Login attempt reached")
 	}
 
+}
+
+func createSubscriptionSchedule(user entity.User) {
+	defaultValue := true
+	subscriptionSchedule := repository.CreateSubscriptionSchedule(
+		dto.SubscriptionSchedule{
+			DailyFrequency: dto.DailyFrequency{
+				Monday:    &defaultValue,
+				Tuesday:   &defaultValue,
+				Wednesday: &defaultValue,
+				Thursday:  &defaultValue,
+				Friday:    &defaultValue,
+				Saturday:  &defaultValue,
+				Sunday:    &defaultValue,
+			},
+			TimeSlot: common.Morning,
+		},
+	)
+	repository.CreateSubscription(user, []string{}, subscriptionSchedule.ID, false)
 }
 
 func CreateFeedBackAndTriggerAdminEmail(feedback dto.Feedback) {

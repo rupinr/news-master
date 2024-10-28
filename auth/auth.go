@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/rsa"
+	"errors"
 	"fmt"
 	"net/http"
 	"news-master/app"
@@ -67,39 +68,48 @@ func loadPublicKey() (*rsa.PublicKey, error) {
 	return jwt.ParseRSAPublicKeyFromPEM(publicKeyData)
 }
 
-func (token *Token) validateAdminToken() *DecodedUser {
+func (token *Token) validateAdminToken() (*DecodedUser, error) {
 	user := defaultDecodedUser()
 	if token.Value == app.Config.AdminToken {
 		user.Admin = true
 		user.Valid = true
+		return user, nil
+	} else {
+		return nil, errors.New("invalid admin token")
 	}
-	return user
-}
-
-func (token *Token) validateSubscriberToken() *DecodedUser {
-	user, _ := ValidateJWT(token.Value)
-	return user
 
 }
 
-func ValidateAdminToken(token Token) *DecodedUser {
+func (token *Token) validateSubscriberToken() (*DecodedUser, error) {
+	user, error := ValidateJWT(token.Value)
+	return user, error
+
+}
+
+func ValidateAdminToken(token Token) (*DecodedUser, error) {
 	return token.validateAdminToken()
 }
 
-func ValidateSubscriberToken(token Token) *DecodedUser {
+func ValidateSubscriberToken(token Token) (*DecodedUser, error) {
 	return token.validateSubscriberToken()
 }
 
-func AuthMiddleware(validateToken func(Token) *DecodedUser) gin.HandlerFunc {
+func AuthMiddleware(validateToken func(Token) (*DecodedUser, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := Token{Value: c.Request.Header.Get("Authorization")}
-		user := validateToken(token)
-
 		if token.Value == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
 			c.Abort()
 			return
 		}
+		user, err := validateToken(token)
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
+			return
+		}
+
 		if !user.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()

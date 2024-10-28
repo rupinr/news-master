@@ -97,19 +97,19 @@ func timeSlotInLocation(currentServerTime *time.Time, schedule *entity.Subscript
 func isMorning(localtime time.Time, location time.Location) bool {
 	six := timeOf(localtime, 6, &location)
 	twelve := timeOf(localtime, 12, &location)
-	return localtime.Equal(six) || localtime.After(six) && localtime.Equal(twelve) || localtime.Before(twelve)
+	return (localtime.Equal(six) || localtime.After(six)) && (localtime.Equal(twelve) || localtime.Before(twelve))
 }
 
 func isAfterNoon(localtime time.Time, location time.Location) bool {
 	twelve := timeOf(localtime, 12, &location)
 	eighteen := timeOf(localtime, 18, &location)
-	return localtime.After(twelve) && localtime.Equal(eighteen) || localtime.Before(eighteen)
+	return localtime.After(twelve) && (localtime.Equal(eighteen) || localtime.Before(eighteen))
 }
 
 func isEvening(localtime time.Time, location time.Location) bool {
 	eighteen := timeOf(localtime, 18, &location)
 	twenty := timeOf(localtime, 20, &location)
-	return localtime.After(eighteen) && localtime.Equal(twenty) || localtime.Before(twenty)
+	return localtime.After(eighteen) && (localtime.Equal(twenty) || localtime.Before(twenty))
 }
 
 func timeOf(localTime time.Time, hour int, location *time.Location) time.Time {

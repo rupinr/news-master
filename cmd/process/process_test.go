@@ -199,6 +199,25 @@ func TestNotify(t *testing.T) {
 			},
 			expectedNotification: false,
 		},
+
+		// Notification on Morning
+		{
+			name:              "Notification on Morning",
+			currentServerTime: time.Date(2023, time.October, 28, 0, 0, 0, 0, time.UTC),
+			subscription: entity.Subscription{
+				SubscriptionSchedule: entity.SubscriptionSchedule{
+					TimeZone:  "Europe/Berlin",
+					Monday:    true,
+					Tuesday:   true,
+					Wednesday: true,
+					Thursday:  true,
+					Friday:    true,
+					Saturday:  true,
+					TimeSlot:  common.Morning,
+				},
+			},
+			expectedNotification: false,
+		},
 	}
 
 	for _, tt := range tests {

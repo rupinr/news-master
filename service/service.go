@@ -57,6 +57,7 @@ func createSubscriptionSchedule(user entity.User) {
 				Sunday:    &defaultValue,
 			},
 			TimeSlot: common.Morning,
+			TimeZone: "Europe/Berlin",
 		},
 	)
 	repository.CreateSubscription(user, []string{}, subscriptionSchedule.ID, false)

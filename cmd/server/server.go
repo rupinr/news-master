@@ -195,8 +195,6 @@ func main() {
 			c.JSON(404, gin.H{"error": "Invalid request"})
 		} else {
 			sub, err := repository.GetSubscriptionByEmail(email)
-
-			fmt.Println(sub.Sites)
 			if err == nil {
 				subData := dto.Subscription{
 					Sites:     dto.MapToUrls(sub.Sites),

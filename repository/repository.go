@@ -159,8 +159,8 @@ func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 		Preload("Sites").
 		Joins("SubscriptionSchedule").
 		Joins("User").
-		Joins("JOIN subscription_sites ON subscription_sites.subscription_id = subscriptions.id").
-		Joins("JOIN sites ON sites.id = subscription_sites.site_id").
+		Joins("LEFT OUTER JOIN subscription_sites ON subscription_sites.subscription_id = subscriptions.id").
+		Joins("LEFT OUTER JOIN sites ON sites.id = subscription_sites.site_id").
 		Find(&subscription, entity.Subscription{UserID: user.ID})
 
 	return subscription, result.Error

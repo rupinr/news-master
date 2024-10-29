@@ -39,43 +39,32 @@ func FetchNewsTask() {
 
 		if apiErr != nil {
 			logger.Log.Error("Error fetching News API", "error", apiErr.Error())
-			return
+			continue
+		} else {
+			defer resp.Body.Close()
+			var response dto.NewsdataApiResponse
+			body, readErr := io.ReadAll(resp.Body)
+
+			if readErr != nil {
+				logger.Log.Error("Error Reading response from News API", "error", readErr.Error())
+				continue
+			}
+
+			unmarshalErr := json.Unmarshal(body, &response)
+
+			if unmarshalErr != nil {
+				logger.Log.Error("Error Processing response from News API", "error", unmarshalErr.Error())
+				continue
+			}
+
+			logger.Log.Debug("Found ariticles", "count", len(response.Results))
+
+			for idx, result := range response.Results {
+				logger.Log.Debug("Inserting article", "index", idx)
+				repository.CreateResult(result)
+			}
 		}
-		defer resp.Body.Close()
-		var response dto.NewsdataApiResponse
-		body, readErr := io.ReadAll(resp.Body)
-
-		if readErr != nil {
-			logger.Log.Error("Error Reading response from News API", "error", readErr.Error())
-			return
-		}
-
-		for i := range response.Results {
-			response.Results[i].SourceUrl = getDomain(response.Results[i].SourceUrl)
-		}
-
-		unmarshalErr := json.Unmarshal(body, &response)
-
-		if unmarshalErr != nil {
-			logger.Log.Error("Error Processing response from News API", "error", unmarshalErr.Error())
-			return
-		}
-
-		logger.Log.Debug("Found ariticles", "count", len(response.Results))
-
-		for _, result := range response.Results {
-			repository.CreateResult(result)
-		}
-
 	}
-}
-
-func getDomain(rawURL string) string {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return fmt.Sprintf("INVALID_RAW_URL_%v", rawURL)
-	}
-	return parsedURL.Host
 }
 
 func SendNewsletter() {

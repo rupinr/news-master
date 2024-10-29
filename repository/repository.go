@@ -249,7 +249,18 @@ func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID
 
 		tx.Where(entity.Subscription{
 			UserID: user.ID,
-		}).Assign(values).FirstOrCreate(&subscription).Association("Sites").Append(foundSites)
+		}).Find(&subscription)
+
+		tx.Model(&subscription).
+			Association("Sites").
+			Clear()
+
+		tx.Where(entity.Subscription{
+			UserID: user.ID,
+		}).Assign(values).
+			FirstOrCreate(&subscription).
+			Association("Sites").
+			Append(foundSites)
 		return nil
 	})
 	return subscription

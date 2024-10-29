@@ -5,6 +5,14 @@ import (
 	"news-master/datamodels/entity"
 )
 
+func MapToUrls(sites []entity.Site) []string {
+	urls := make([]string, len(sites))
+	for i, site := range sites {
+		urls[i] = site.Url
+	}
+	return urls
+}
+
 type Topic struct {
 	Name    string `json:"name" binding:"required"`
 	Visible bool   `json:"visible"`

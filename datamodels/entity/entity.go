@@ -36,11 +36,11 @@ type Subscription struct {
 	UserID                 uint `gorm:"uniqueIndex"`
 	User                   User
 	Topics                 pq.StringArray `gorm:"type:text[]"`
-	Sites                  pq.StringArray `gorm:"type:text[]"`
 	SubscriptionScheduleID uint
 	SubscriptionSchedule   SubscriptionSchedule
 	Confirmed              bool
 	LastProcessedAt        time.Time
+	Sites                  []Site `gorm:"many2many:subscription_sites;"`
 }
 type SubscriptionSchedule struct {
 	gorm.Model

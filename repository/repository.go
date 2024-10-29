@@ -156,6 +156,7 @@ func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	}
 	var subscription entity.Subscription
 	db().
+		Preload("Sites").
 		Joins("SubscriptionSchedule").
 		Joins("User").
 		Find(&subscription, entity.Subscription{UserID: user.ID})
@@ -190,11 +191,11 @@ func SetLastProcessedAt(subscriptionId uint) {
 	db().Save(&sub)
 }
 
-func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []string) []entity.Article {
+func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []entity.Site) []entity.Article {
 	var articles []entity.Article
-	db().Where("created_at > ?", fromDate).Where("site IN ?", sites).Find(&articles)
+	dto.MapToUrls(sites)
+	db().Where("created_at > ?", fromDate).Where("site IN ?", dto.MapToUrls(sites)).Find(&articles)
 	return articles
-
 }
 
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {
@@ -235,16 +236,20 @@ func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedul
 }
 
 func CreateSubscription(user entity.User, sites []string, subscriptionScheduleID uint, isConfirmed bool) entity.Subscription {
-	attrs := entity.Subscription{
-		UserID: user.ID,
-	}
+	var subscription entity.Subscription
 	values := entity.Subscription{
-		Sites:                  pq.StringArray(sites),
 		SubscriptionScheduleID: subscriptionScheduleID,
 		Confirmed:              isConfirmed,
 	}
-	var subscription entity.Subscription
-	db().Where(attrs).Assign(values).FirstOrCreate(&subscription)
+	db().Transaction(func(tx *gorm.DB) error {
+		var foundSites []entity.Site
+		tx.Where("url IN ?", sites).Where("active = ?", true).Find(&foundSites)
+
+		tx.Where(entity.Subscription{
+			UserID: user.ID,
+		}).Assign(values).FirstOrCreate(&subscription).Association("Sites").Append(foundSites)
+		return nil
+	})
 	return subscription
 }
 

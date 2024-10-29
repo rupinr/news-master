@@ -176,7 +176,7 @@ func main() {
 			}
 
 			s := dto.Subscription{
-				Sites:                    sub.Sites,
+				Sites:                    dto.MapToUrls(sub.Sites),
 				SubscriptionScheduleData: subData,
 				Confirmed:                true,
 			}
@@ -195,9 +195,11 @@ func main() {
 			c.JSON(404, gin.H{"error": "Invalid request"})
 		} else {
 			sub, err := repository.GetSubscriptionByEmail(email)
+
+			fmt.Println(sub.Sites)
 			if err == nil {
 				subData := dto.Subscription{
-					Sites:     sub.Sites,
+					Sites:     dto.MapToUrls(sub.Sites),
 					Confirmed: sub.Confirmed,
 					SubscriptionScheduleData: dto.SubscriptionSchedule{
 						DailyFrequency: dto.DailyFrequency{

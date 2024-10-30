@@ -104,6 +104,14 @@ func AuthMiddleware(validateToken func(Token) (*DecodedUser, error)) gin.Handler
 		}
 		user, err := validateToken(token)
 
+		_, userErr := repository.GetUserByEmail(user.Email)
+
+		if userErr != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
+			return
+		}
+
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
@@ -115,6 +123,7 @@ func AuthMiddleware(validateToken func(Token) (*DecodedUser, error)) gin.Handler
 			c.Abort()
 			return
 		}
+
 		c.Set("user", user)
 		c.Next()
 	}

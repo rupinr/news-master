@@ -72,10 +72,9 @@ func SendNewsletter() {
 
 	logger.Log.Debug(fmt.Sprintf("Processing %v number of subscriptions", len(subscriptions)))
 
-	for idx, subscription := range subscriptions {
+	for _, subscription := range subscriptions {
 
-		logger.Log.Debug("Processing Item", "index", idx)
-
+		logger.Log.Debug("Number of sites in subscription", "number", len(subscription.Sites), "sub_id", subscription.ID)
 		time := time.Now()
 		canSendEmail := notification.IsRightTime(&time, &subscription)
 		if canSendEmail {

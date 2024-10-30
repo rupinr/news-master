@@ -55,28 +55,6 @@ func main() {
 	r.Use(config)
 
 	/*Admin  API Start*/
-	r.POST("/admin/topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
-		var topic dto.Topic
-		if c.ShouldBindJSON(&topic) == nil {
-			repository.CreateTopic(topic)
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-		}
-	})
-
-	r.PUT("/admin/topic/:topic", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
-		topicName := c.Param("topic")
-		var update dto.TopicUpdate
-		if c.ShouldBindJSON(&update) == nil {
-			err := repository.UpdateTopic(topicName, *update.Visibility)
-			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
-			}
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-		}
-	})
-
 	r.POST("/admin/site", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var site dto.Site
 		if c.ShouldBindJSON(&site) == nil {
@@ -108,7 +86,6 @@ func main() {
 	/*Admin  API End*/
 
 	/*User Unathorised API Start*/
-
 	r.POST("/feedback", func(c *gin.Context) {
 		var feedback dto.Feedback
 		if c.ShouldBindJSON(&feedback) == nil {
@@ -136,7 +113,6 @@ func main() {
 	/*User Unathorised API End*/
 
 	/*User Athorised API Start*/
-
 	r.GET("/sites", auth.AuthMiddleware(auth.ValidateSubscriberToken), func(c *gin.Context) {
 		sites := repository.GetActiveSites()
 		siteData := []dto.Site{}

@@ -26,30 +26,6 @@ func (e *DbError) Error() string {
 	return fmt.Sprintf("Error %d: %s", e.Code, e.Message)
 }
 
-func CreateTopic(topicData dto.Topic) (entity.Topic, error) {
-	topic := entity.Topic{Visible: false}
-	err := db().Where(entity.Topic{Name: topicData.Name}).FirstOrCreate(&topic).Error
-	return topic, err
-}
-
-func UpdateTopic(name string, visibility bool) error {
-	err = db().Transaction(func(tx *gorm.DB) error {
-		var topic entity.Topic
-		if err := tx.Where(&entity.Topic{Name: name}).First(&topic).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("topic not found")
-			}
-			return err
-		}
-		topic.Visible = visibility
-		if err := tx.Save(&topic).Error; err != nil {
-			return err
-		}
-		return nil
-	})
-	return err
-}
-
 func CreateSite(siteData dto.Site) {
 	var siteDb entity.Site
 	db().Where(entity.Site{Url: siteData.Url}).Assign(entity.Site{
@@ -130,7 +106,7 @@ func ResetLoginCounter(id uint) {
 	user := entity.User{}
 	db().Find(&user, id)
 	user.LoginAttemptCount = 0
-	db().Save(&user)
+	db().Updates(&user)
 }
 
 func GetUser(userData dto.User) entity.User {
@@ -140,11 +116,18 @@ func GetUser(userData dto.User) entity.User {
 	return user
 }
 
+func GetUserByEmail(email string) (entity.User, error) {
+	userDb := entity.User{Email: email}
+	var user entity.User
+	r := db().Where(userDb).First(&user, userDb)
+	return user, r.Error
+}
+
 func IncrementAndGetLoginAttempt(userData dto.User) entity.User {
 	user := entity.User{}
 	db().Where(entity.User{Email: userData.Email}).Find(&user)
 	user.LoginAttemptCount++
-	db().Save(&user)
+	db().Updates(&user)
 	return user
 }
 
@@ -177,6 +160,7 @@ func GetSubscriptionsToProcess() []entity.Subscription {
 	var subscriptions []entity.Subscription
 	currentDate := time.Now().Format("2006-01-02")
 	db().
+		Preload("Sites").
 		Where("last_processed_at < ?", currentDate).
 		Where("confirmed = ?", true).
 		Joins("SubscriptionSchedule").
@@ -190,7 +174,7 @@ func SetLastProcessedAt(subscriptionId uint) {
 	var sub entity.Subscription
 	db().Find(&sub, subscriptionId)
 	sub.LastProcessedAt = time
-	db().Save(&sub)
+	db().Updates(&sub)
 }
 
 func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []entity.Site) []entity.Article {
@@ -275,11 +259,11 @@ func CreateFeedBack(feedback dto.Feedback) (*entity.Feedback, error) {
 
 func CancelSubscription(sub *entity.Subscription) {
 	sub.Confirmed = false
-	db().Save(&sub)
+	db().Updates(&sub)
 }
 
 func Migrate() {
-	db().AutoMigrate(&entity.Topic{}, &entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{}, &entity.Article{}, &entity.Feedback{})
+	db().AutoMigrate(&entity.Subscription{}, &entity.Site{}, &entity.User{}, &entity.SubscriptionSchedule{}, &entity.Article{}, &entity.Feedback{})
 }
 
 var (

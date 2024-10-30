@@ -8,11 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Topic struct {
-	gorm.Model
-	Name    string `gorm:"uniqueIndex:idx_name_visible"`
-	Visible bool   `gorm:"index:idx_name_visible"`
-}
 type Site struct {
 	gorm.Model
 	Url      string `gorm:"index:idx_url"`
@@ -35,7 +30,6 @@ type Subscription struct {
 	gorm.Model
 	UserID                 uint `gorm:"uniqueIndex"`
 	User                   User
-	Topics                 pq.StringArray `gorm:"type:text[]"`
 	SubscriptionScheduleID uint
 	SubscriptionSchedule   SubscriptionSchedule
 	Confirmed              bool

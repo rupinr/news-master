@@ -59,8 +59,7 @@ func FetchNewsTask() {
 
 			logger.Log.Debug("Found ariticles", "count", len(response.Results))
 
-			for idx, result := range response.Results {
-				logger.Log.Debug("Inserting article", "index", idx)
+			for _, result := range response.Results {
 				repository.CreateResult(result)
 			}
 		}

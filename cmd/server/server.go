@@ -66,6 +66,7 @@ func main() {
 
 	r.POST("/admin/sites/update", auth.AuthMiddleware(auth.ValidateAdminToken), func(c *gin.Context) {
 		var sites []dto.Site
+
 		if c.ShouldBindJSON(&sites) == nil {
 			repository.UpdateSites(sites)
 		} else {
@@ -78,7 +79,7 @@ func main() {
 		siteData := []dto.Site{}
 
 		for _, site := range sites {
-			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active, Language: site.Language})
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: &site.Active, Language: site.Language})
 		}
 		jsonData, _ := json.Marshal(siteData)
 		c.Data(http.StatusOK, "application/json", jsonData)
@@ -117,7 +118,7 @@ func main() {
 		sites := repository.GetActiveSites()
 		siteData := []dto.Site{}
 		for _, site := range sites {
-			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: site.Active})
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: &site.Active})
 		}
 		jsonData, _ := json.Marshal(siteData)
 		c.Data(http.StatusOK, "application/json", jsonData)

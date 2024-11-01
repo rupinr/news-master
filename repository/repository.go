@@ -31,7 +31,7 @@ func CreateSite(siteData dto.Site) {
 	db().Where(entity.Site{Url: siteData.Url}).Assign(entity.Site{
 		Name:     siteData.Name,
 		Language: siteData.Language,
-		Active:   siteData.Active,
+		Active:   *siteData.Active,
 	}).FirstOrCreate(&siteDb)
 }
 
@@ -43,12 +43,11 @@ func UpdateSites(siteData []dto.Site) {
 		}
 	}
 	for _, v := range siteData {
-		db().Where(entity.Site{
-			Url: v.Url,
-		}).UpdateColumns(entity.Site{
-			Name:     v.Name,
-			Active:   v.Active,
-			Language: v.Language,
+
+		db().Model(&entity.Site{}).Where(&entity.Site{Url: v.Url}).UpdateColumns(map[string]interface{}{
+			"Name":     v.Name,
+			"Active":   *v.Active,
+			"Language": v.Language,
 		})
 	}
 }

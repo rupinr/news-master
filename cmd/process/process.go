@@ -89,8 +89,10 @@ func timeSlotInLocation(currentServerTime *time.Time, schedule *entity.Subscript
 		return common.Afternoon
 	} else if isEvening(localTime, *location) {
 		return common.Evening
-	} else {
+	} else if isNight(localTime, *location) {
 		return common.Night
+	} else {
+		return common.SilentHours
 	}
 }
 
@@ -110,6 +112,12 @@ func isEvening(localtime time.Time, location time.Location) bool {
 	eighteen := timeOf(localtime, 18, &location)
 	twenty := timeOf(localtime, 20, &location)
 	return localtime.After(eighteen) && (localtime.Equal(twenty) || localtime.Before(twenty))
+}
+
+func isNight(localtime time.Time, location time.Location) bool {
+	twenty := timeOf(localtime, 20, &location)
+	twentyThree := timeOf(localtime, 23, &location)
+	return localtime.After(twenty) && (localtime.Equal(twentyThree) || localtime.Before(twentyThree))
 }
 
 func timeOf(localTime time.Time, hour int, location *time.Location) time.Time {

@@ -213,10 +213,38 @@ func TestNotify(t *testing.T) {
 					Thursday:  true,
 					Friday:    true,
 					Saturday:  true,
-					TimeSlot:  common.Morning,
+					TimeSlot:  common.Night,
 				},
 			},
 			expectedNotification: false,
+		},
+
+		//Silent Hours After 11
+		{
+			name:              "Silent Hours After 11",
+			currentServerTime: time.Date(2024, time.October, 28, 23, 0, 0, 0, time.UTC),
+			subscription: entity.Subscription{
+				SubscriptionSchedule: entity.SubscriptionSchedule{
+					TimeZone: "Europe/Berlin",
+					Monday:   true,
+					TimeSlot: common.Night,
+				},
+			},
+			expectedNotification: false,
+		},
+
+		//No Silent Hours At 22:00
+		{
+			name:              "No Silent Hours At 22:00 ",
+			currentServerTime: time.Date(2024, time.October, 28, 22, 0, 0, 0, time.UTC),
+			subscription: entity.Subscription{
+				SubscriptionSchedule: entity.SubscriptionSchedule{
+					TimeZone: "Europe/Berlin",
+					Monday:   true,
+					TimeSlot: common.Night,
+				},
+			},
+			expectedNotification: true,
 		},
 	}
 

@@ -178,10 +178,16 @@ func SetLastProcessedAt(subscriptionId uint) {
 
 func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []entity.Site) []entity.Article {
 	var articles []entity.Article
-	twoDaysAgo := time.Now().AddDate(0, 0, -2)
+	emptyDate := time.Time{}
+	var actualFromDate time.Time
+	if fromDate.Equal(emptyDate) {
+		actualFromDate = time.Now().AddDate(0, 0, -2)
+	} else {
+		actualFromDate = fromDate
+	}
 	dto.MapToUrls(sites)
 	db().
-		Where("created_at > ? AND created_at < ?", fromDate, twoDaysAgo).
+		Where("created_at > ?", actualFromDate).
 		Where("site IN ?", dto.MapToUrls(sites)).
 		Find(&articles)
 	return articles

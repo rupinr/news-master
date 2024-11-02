@@ -80,7 +80,7 @@ func SendNewsletter() {
 			articles := repository.GetArticlesAfterLastProcessedTime(subscription.LastProcessedAt, subscription.Sites)
 
 			if len(articles) == 0 {
-				logger.Log.Debug("No articles found for the subscription, not sending email")
+				logger.Log.Debug("No articles found for the subscription, not sending email for", "sub_id", subscription.ID)
 				continue
 			}
 

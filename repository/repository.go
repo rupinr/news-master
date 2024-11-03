@@ -102,10 +102,7 @@ func MarkUserDeleted(email string) {
 }
 
 func ResetLoginCounter(id uint) {
-	user := entity.User{}
-	db().Find(&user, id)
-	user.LoginAttemptCount = 0
-	db().Updates(&user)
+	db().Model(&entity.User{}).Where("id = ?", id).Updates(map[string]interface{}{"LoginAttemptCount": 0})
 }
 
 func GetUser(userData dto.User) entity.User {

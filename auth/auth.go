@@ -147,7 +147,10 @@ func ValidateJWT(tokenString string) (*DecodedUser, error) {
 		user.Valid = true
 		user.Email = claims.Email
 		user.ID = claims.ID
-		resetLoginAttemptCounter(user.ID)
+
+		if !user.Admin {
+			resetLoginAttemptCounter(user.ID)
+		}
 	} else {
 		logger.Log.Debug("Invalid token.")
 	}

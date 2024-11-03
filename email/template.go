@@ -17,6 +17,9 @@ var registrationTemplate embed.FS
 //go:embed news-letter.html
 var newsLetterTemplate embed.FS
 
+//go:embed update.html
+var updateTemplate embed.FS
+
 func GenerateRegistrationHTML(emailData EmailData) (string, error) {
 	htmlTemplate, _ := registrationTemplate.ReadFile("registration.html")
 
@@ -33,6 +36,21 @@ func GenerateRegistrationHTML(emailData EmailData) (string, error) {
 	return htmlBody.String(), nil
 }
 
+func GenerateUpdateHTML(emailData EmailData) (string, error) {
+	htmlTemplate, _ := updateTemplate.ReadFile("update.html")
+
+	t, err := template.New("email").Parse(string(htmlTemplate))
+	if err != nil {
+		return "", err
+	}
+
+	var htmlBody bytes.Buffer
+	if err = t.Execute(&htmlBody, emailData); err != nil {
+		return "", err
+	}
+
+	return htmlBody.String(), nil
+}
 func NewsLetterHTML(articles dto.NewsletterData) (string, error) {
 	htmlTemplate, _ := newsLetterTemplate.ReadFile("news-letter.html")
 

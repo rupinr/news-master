@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"log/slog"
 	"news-master/app"
 	"news-master/auth"
 	"news-master/datamodels/common"
@@ -10,6 +9,7 @@ import (
 	"news-master/datamodels/entity"
 	"news-master/email"
 	"news-master/helper"
+	"news-master/logger"
 	"news-master/repository"
 	"strconv"
 )
@@ -19,23 +19,31 @@ func CreateUserAndTriggerLoginEmail(user dto.User) (entity.User, error) {
 	maxLoginAttempt, _ := strconv.Atoi(app.Config.MaxLoginAttempt)
 	if createdUser.LoginAttemptCount < maxLoginAttempt {
 		repository.IncrementAndGetLoginAttempt(user)
-		if isNewUser {
-			createSubscriptionSchedule(createdUser)
-		}
+		var subject string
+		var html string
+		var htmlErr error
 		token, _ := auth.SubscriberToken(createdUser.ID, user.Email, 24)
 		emailData := email.EmailData{ActivationLink: helper.PreAuthLink(token)}
-		htmlEmail, htmlErr := email.GenerateRegistrationHTML(emailData)
 		textEmail, txtErr := email.GenerateText(emailData)
+		if isNewUser {
+			createSubscriptionSchedule(createdUser)
+			subject = "Activate Your QuickBrew Subscription Now!"
+			html, htmlErr = email.GenerateRegistrationHTML(emailData)
+		} else {
+			subject = "Manage Your QuickBrew Subscription"
+			html, htmlErr = email.GenerateUpdateHTML(emailData)
+		}
 		if htmlErr == nil && txtErr == nil && createErr == nil {
 			go email.SendEmail(
 				createdUser.Email,
-				"Activate Your QuickBrew Subscription Now!",
-				htmlEmail,
+				subject,
+				html,
 				textEmail,
 			)
 		} else {
-			slog.Error("Error in email template", htmlErr.Error(), txtErr.Error())
+			logger.Log.Error("Error in email template", "htmlError", htmlErr.Error(), "txtErr", txtErr.Error())
 		}
+		logger.Log.Debug("User got registered")
 		return createdUser, nil
 	} else {
 		return createdUser, errors.New("max Login attempt reached")

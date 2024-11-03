@@ -121,3 +121,7 @@ func SendNewsletter() {
 		}
 	}
 }
+
+func CleanUp() {
+	repository.DeleteOldArticlesFrom(time.Now().AddDate(0, 0, -3))
+}

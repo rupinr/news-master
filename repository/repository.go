@@ -186,6 +186,8 @@ func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []entity.Site) 
 	db().
 		Where("created_at > ?", actualFromDate).
 		Where("site IN ?", dto.MapToUrls(sites)).
+		Order("site").
+		Order("created_at").
 		Find(&articles)
 	return articles
 }

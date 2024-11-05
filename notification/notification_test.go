@@ -1,9 +1,9 @@
-package process_test
+package notification_test
 
 import (
-	"news-master/cmd/process"
 	"news-master/datamodels/common"
 	"news-master/datamodels/entity"
+	"news-master/notification"
 	"testing"
 	"time"
 )
@@ -250,7 +250,7 @@ func TestNotify(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := process.IsRightTime(&tt.currentServerTime, &tt.subscription)
+			got := notification.IsRightTime(&tt.currentServerTime, &tt.subscription)
 			if got != tt.expectedNotification {
 				t.Errorf("Failed test %v, Notify() = %v, want %v", tt.name, got, tt.expectedNotification)
 			}

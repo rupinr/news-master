@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"news-master/app"
 	"news-master/auth"
-	notification "news-master/cmd/process"
 	"news-master/datamodels/dto"
 	"news-master/email"
 	"news-master/helper"
 	"news-master/logger"
+	"news-master/notification"
 	"news-master/repository"
 	"time"
 )

@@ -1,4 +1,4 @@
-package process
+package notification
 
 import (
 	"news-master/datamodels/common"

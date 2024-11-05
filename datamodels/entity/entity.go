@@ -51,13 +51,14 @@ type SubscriptionSchedule struct {
 
 type Article struct {
 	gorm.Model
-	Title       string
-	Link        string
-	Description string
-	Content     string
-	ImageURL    string
-	Language    string
-	Country     pq.StringArray `gorm:"type:text[]"`
-	Category    pq.StringArray `gorm:"type:text[]"`
-	Site        string         `gorm:"index:site"`
+	ArticleExternalId string `gorm:"index:idx_ext_id"`
+	Title             string
+	Link              string
+	Description       string
+	Content           string
+	ImageURL          string
+	Language          string
+	Country           pq.StringArray `gorm:"type:text[]"`
+	Category          pq.StringArray `gorm:"type:text[]"`
+	Site              string         `gorm:"index:site"`
 }

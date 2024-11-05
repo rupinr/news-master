@@ -53,18 +53,24 @@ func UpdateSites(siteData []dto.Site) {
 }
 
 func CreateResult(result dto.Article) {
-	article := entity.Article{
-		Title:       result.Title,
-		Link:        result.Link,
-		Description: result.Description,
-		Content:     result.Content,
-		ImageURL:    result.ImageURL,
-		Language:    result.Language,
-		Country:     pq.StringArray(result.Country),
-		Category:    pq.StringArray(result.Category),
-		Site:        getDomain(result.SourceUrl),
+
+	existingArticle := entity.Article{
+		ArticleExternalId: result.ArticleId,
 	}
-	db().Create(&article)
+
+	article := entity.Article{
+		ArticleExternalId: result.ArticleId,
+		Title:             result.Title,
+		Link:              result.Link,
+		Description:       result.Description,
+		Content:           result.Content,
+		ImageURL:          result.ImageURL,
+		Language:          result.Language,
+		Country:           pq.StringArray(result.Country),
+		Category:          pq.StringArray(result.Category),
+		Site:              getDomain(result.SourceUrl),
+	}
+	db().Where(existingArticle).Attrs(article).FirstOrCreate(&article)
 }
 
 func getDomain(rawURL string) string {

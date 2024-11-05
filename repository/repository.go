@@ -198,11 +198,12 @@ func GetArticlesAfterLastProcessedTime(fromDate time.Time, sites []entity.Site) 
 	return articles
 }
 
-func DeleteOldArticlesFrom(fromDate time.Time) {
+func DeleteOldArticlesFrom(fromDate time.Time) (int64, error) {
 	var articles []entity.Article
-	db().Unscoped().
+	r := db().Unscoped().
 		Where("created_at > ?", fromDate).
 		Delete(&articles)
+	return r.RowsAffected, r.Error
 }
 
 func CreateSubscriptionSchedule(subscriptionScheduleData dto.SubscriptionSchedule) entity.SubscriptionSchedule {

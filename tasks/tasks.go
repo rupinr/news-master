@@ -123,5 +123,10 @@ func SendNewsletter() {
 }
 
 func CleanUp() {
-	repository.DeleteOldArticlesFrom(time.Now().AddDate(0, 0, -3))
+	deletedRowCount, err := repository.DeleteOldArticlesFrom(time.Now().AddDate(0, 0, -8))
+	if err == nil {
+		logger.Log.Info("Cleanup Completed successfully", "count", deletedRowCount)
+	} else {
+		logger.Log.Error("Cleanup Has errors", "error", err.Error())
+	}
 }

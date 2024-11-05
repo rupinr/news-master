@@ -22,11 +22,18 @@ func main() {
 
 	_, newsFetchJobErr := scheduler.NewJob(gocron.CronJob(app.Config.NewsFetchCron, false), gocron.NewTask(tasks.FetchNewsTask))
 
-	scheduler.NewJob(gocron.CronJob("0 0 * * *", false), gocron.NewTask(tasks.CleanUp))
+	_, cleanupJobErr := scheduler.NewJob(gocron.CronJob("0 0 * * *", false), gocron.NewTask(tasks.CleanUp))
 
-	if subscriptionJoberr != nil || newsFetchJobErr != nil {
+	if subscriptionJoberr != nil {
+		panic(fmt.Sprintf("Error in subscription job %v ", subscriptionJoberr))
+	}
 
-		panic(fmt.Sprintf("Error in jobs %v %v", newsFetchJobErr, subscriptionJoberr))
+	if newsFetchJobErr != nil {
+		panic(fmt.Sprintf("Error in newsFetch job %v ", newsFetchJobErr))
+	}
+
+	if cleanupJobErr != nil {
+		panic(fmt.Sprintf("Error in cleanup job %v ", cleanupJobErr))
 	}
 
 	scheduler.Start()

@@ -149,7 +149,7 @@ func GetSubscriptionByEmail(email string) (entity.Subscription, error) {
 	}
 	var subscription entity.Subscription
 	db().
-		Preload("Sites").
+		Preload("Sites", "active = ?", true).
 		Preload("User").
 		Preload("SubscriptionSchedule").
 		Joins("LEFT JOIN users ON users.id = subscriptions.user_id").

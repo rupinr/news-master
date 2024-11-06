@@ -97,7 +97,7 @@ func GetTopSites() []entity.Site {
 	var sites []entity.Site
 	db().Where(&entity.Site{
 		Active: true,
-	}).Limit(7).Find(&sites)
+	}).Limit(7).Order("RANDOM()").Find(&sites)
 	return sites
 }
 

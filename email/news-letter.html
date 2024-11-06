@@ -34,14 +34,6 @@
             border-bottom: 1px solid #ddd;
         }
 
-        .entry img {
-            width: 100%;
-            height: auto;
-            max-width: 600px;
-            max-height: 400px;
-            border-radius: 5px;
-        }
-
         .entry h2 {
             color: #3A7CA5;
             margin-top: 0;
@@ -71,7 +63,8 @@
             <a href="{{.Link}}" target="_blank">
                 <h2>{{.Title}}</h2>
                 {{if .ImageURL}}
-                <img src="{{.ImageURL}}" alt="{{.Title}}">
+                <img src="{{.ImageURL}}" alt="{{.Title}}"
+                    style="width: 100%; height: auto; max-width: 600px; max-height: 400px; border-radius: 5px;">
                 {{end}}
             </a>
         </div>

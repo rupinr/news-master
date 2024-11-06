@@ -93,6 +93,14 @@ func GetAllSites() []entity.Site {
 	return sites
 }
 
+func GetTopSites() []entity.Site {
+	var sites []entity.Site
+	db().Where(&entity.Site{
+		Active: true,
+	}).Limit(7).Find(&sites)
+	return sites
+}
+
 func CreateUser(userData dto.User) (entity.User, bool, error) {
 	userDb := entity.User{Email: userData.Email}
 	var user entity.User

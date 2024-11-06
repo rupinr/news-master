@@ -87,6 +87,17 @@ func main() {
 	/*Admin  API End*/
 
 	/*User Unathorised API Start*/
+
+	r.GET("/sites/top", func(c *gin.Context) {
+		sites := repository.GetTopSites()
+		siteData := []dto.Site{}
+		for _, site := range sites {
+			siteData = append(siteData, dto.Site{Url: site.Url, Name: site.Name, Active: &site.Active, Language: site.Language})
+		}
+		jsonData, _ := json.Marshal(siteData)
+		c.Data(http.StatusOK, "application/json", jsonData)
+	})
+
 	r.POST("/feedback", func(c *gin.Context) {
 		var feedback dto.Feedback
 		if c.ShouldBindJSON(&feedback) == nil {
